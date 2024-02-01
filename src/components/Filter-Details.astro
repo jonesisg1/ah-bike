@@ -1,0 +1,63 @@
+<script>
+
+    const clearButton = document.querySelector("#filter-clear");
+    clearButton.addEventListener("click", (evt) => {
+        evt.stopPropagation();
+        alert('smeg');
+    });
+
+</script>
+<sl-details class="mt-3" open>
+    <div slot="summary" class="w-full flex justify-between items-center">
+        Category
+        <sl-icon-button id="filter-clear" name="backspace" label="Clear filter" class="pr-3"></sl-icon-button>
+    </div>
+    <sl-checkbox 
+        data-filter-type="category" 
+        value="Bikepacking And Touring Bikes"
+        hx-post="http://localhost:3001/rpc/html_bikes"
+        hx-target="#bike-grid"
+        hx-trigger="click"                           
+    >
+        Bikepacking And Touring Bikes
+    </sl-checkbox>
+    <sl-checkbox
+        data-filter-type="category" 
+        class="mt-3" 
+        value="Cross Country Mountain Bikes"
+        hx-post="http://localhost:3001/rpc/html_bikes"
+        hx-target="#bike-grid"
+        hx-trigger="click"                            
+    >
+        Cross Country Mountain Bikes
+    </sl-checkbox>                        
+</sl-details>
+<sl-details summary="Fork Travel" class="mt-3" open>
+    <div class="checkboxes">
+    <sl-checkbox 
+        data-filter-type="fork_travel" 
+        value="100"
+        hx-post="http://localhost:3001/rpc/html_bikes"
+        hx-target="#bike-grid"
+        hx-trigger="click"                           
+    >
+        100
+    </sl-checkbox>
+    <sl-checkbox
+        data-filter-type="fork_travel" 
+        class="mt-3" 
+        value="150"
+        hx-post="http://localhost:3001/rpc/html_bikes"
+        hx-target="#bike-grid"
+        hx-trigger="click"                            
+    >
+        150
+    </sl-checkbox>
+    </div>
+</sl-details>
+
+<!-- <style>
+    sl-details::part(summary) sl-icon {
+  justify-content: space-between;
+}
+</style> -->

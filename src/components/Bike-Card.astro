@@ -1,0 +1,31 @@
+---
+interface Props {
+	model: string; brand: string; wheelSize: string; frameMaterial: string;
+    forkTravel: number; rearTravel: number; price: number;
+}
+
+const { model, brand, wheelSize, frameMaterial, forkTravel, rearTravel, price } = Astro.props;
+---
+<div class="m-3 min-w-72 basis-80 grow">
+    <sl-card>
+        <h4 class="pb-3">{model}</h4>
+        <h6><strong>Brand: </strong>{brand}</h6>
+        <h6><strong>Wheel Sizs: </strong>{wheelSize}</h6>
+        <h6><strong>Frame Material: </strong>{frameMaterial}</h6>
+        <h6><strong>Fork Travel: </strong>{forkTravel}</h6>
+        <h6><strong>Rear Travel: </strong>{rearTravel}</h6>
+        <div slot="footer">
+            <strong>Price:</strong> £{price}
+        </div>
+    </sl-card>
+</div>
+<style>
+    strong {
+        font-weight: 600;
+    }
+    h6 {
+        padding-inline-start: 1rem;
+        text-indent: -1rem; /* 4px */
+    }
+
+</style>

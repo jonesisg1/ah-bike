@@ -7,15 +7,39 @@ const { title } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class="">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="description" content="Astro description" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
+
+        <!-- Tailwind for CSS styling -->
+        <!-- <link
+            href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css"
+            rel="stylesheet"
+        /> -->
+        <!-- htmx for AJAX requests -->
+        <script src="https://unpkg.com/htmx.org"></script>
+		<!-- Shoelace web components -->
+        <!-- <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/cdn/themes/dark.css"
+        /> -->
+		<link
+			rel="stylesheet"
+			href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/cdn/themes/light.css"
+		/>
+        <script
+            type="module"
+            src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/cdn/shoelace.js"
+        ></script>
 		<title>{title}</title>
 	</head>
+	<div class="flex justify-center mt-3">
+		<h1>Astro HTMX Bike</h1>
+	</div>
 	<body>
 		<slot />
 	</body>
@@ -29,12 +53,12 @@ const { title } = Astro.props;
 			45deg,
 			rgb(var(--accent)),
 			rgb(var(--accent-light)) 30%,
-			white 60%
+			/* white 60% */
 		);
 	}
 	html {
 		font-family: system-ui, sans-serif;
-		background: #13151a;
+		/* background: #13151a; */
 		background-size: 224px;
 	}
 	code {

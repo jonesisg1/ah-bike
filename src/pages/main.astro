@@ -1,0 +1,172 @@
+---
+import FilterDetails from "../components/Filter-Details.astro";
+import Layout from "../layouts/Layout.astro"
+---
+<script>
+document.body.addEventListener(
+    "htmx:configRequest",
+    function (evt) {
+        let filters = {};
+        document.querySelectorAll("sl-checkbox[checked]").forEach((cur)=>{
+            // @ts-ignore
+            // console.log(cur.attributes['data-filter-type'])
+            filters[cur.attributes['data-filter-type'].nodeValue] ??= [];
+            // @ts-ignore
+            filters[cur.attributes['data-filter-type'].nodeValue].push(cur?.value);
+            // console.log(filters)
+        })
+        // @ts-ignore
+        evt.detail.parameters["_options"] = {
+            // @ts-ignore
+            order: document.getElementById("sort")?.value,
+            filters: filters
+        };
+        // @ts-ignore
+        console.log(evt.detail.parameters);
+    },
+);
+const drawer = document.querySelector(".drawer-placement-start");
+const openButton = document.querySelector("#open-button");
+const filterBar = document.querySelector("#filter-bar");
+
+ // @ts-ignore
+openButton.addEventListener("click", () => drawer.show());
+
+function mqAction(mediaQuery) {
+    if (mediaQuery.matches) {
+        // If media query matches
+        drawer.append(filterBar);
+        openButton.classList.remove('invisible');
+        filterBar.classList.remove('h-dvh')
+    } else {
+        document
+            .querySelector("main")
+            .prepend(filterBar);
+        filterBar.classList.add('h-dvh')
+        openButton.className = "invisible";
+         // @ts-ignore
+        drawer.hide();
+    }
+}
+// Create a MediaQueryList object
+var mqSmall = window.matchMedia("(max-width: 600px)");
+// Call listener function at run time
+mqAction(mqSmall);
+// Attach listener function on state changes
+mqSmall.addEventListener("change", function () {
+    mqAction(mqSmall);
+});
+        
+</script>
+<Layout title="Astro HTMX Bike">
+    <main 
+        class="container flex mx-auto m-3"
+        hx-headers='{"Accept": "text/html"}'
+    >
+        <sl-drawer
+            label="Filters"
+            placement="start"
+            class="drawer-placement-start"
+            style="--size: 90%;"
+        >
+            <!-- <sl-button slot="footer" variant="primary">Close</sl-button> -->
+        </sl-drawer>
+        <div class="fixed left-3 top-3">
+            <sl-icon-button name="sliders" id="open-button" style="font-size: 2rem;"></sl-icon-button>
+        </div>
+        <div id="filter-bar" class="min-w-min h-dvh side-bar">
+            <sl-select
+                zzclass="w-72"
+                id="sort"
+                label="Sort by"
+                value="model_name-ASC"
+                hx-post="http://localhost:3001/rpc/html_bikes"
+                hx-target="#bike-grid"
+                hx-trigger="sl-change"
+            >
+                <sl-option value="book_price_from-ASC">Price: Low-High</sl-option>
+                <sl-option value="book_price_from-DESC">Price: High-Low</sl-option>
+                <sl-option value="model_name-ASC">Model name: Low-High</sl-option>
+                <sl-option value="model_name-DESC">Model name: High-Low</sl-option>
+            </sl-select>    
+            <!-- <FilterDetails></FilterDetails> -->
+            <div id="bike-filters"
+                hx-post="http://localhost:3001/rpc/html_bike_filters"
+                hx-target="this"
+                hx-trigger="load"                    
+            >
+            </div>
+        </div>
+        <!-- <img src="trek/1120_21_33304_A_Primary.webp" loading="lazy"> -->
+        <div id="bike-grid" class="flex flex-wrap"
+            hx-post="http://localhost:3001/rpc/html_bikes"
+            hx-target="this"
+            hx-trigger="load"
+        >
+        </div>
+    </main>
+</Layout>
+
+<style is:global>
+    :not(:defined) {
+        visibility: hidden;
+    }
+    .side-bar {
+        position: sticky;
+        top: 0.75rem;
+    }
+    h1 { 
+        /* text-3xl */
+        font-size: 1.875rem; /* 30px */
+        line-height: 2.25rem; /* 36px */
+    }
+    h3 {
+        /* text-3xl */
+        font-size: 1.875rem; /* 30px */
+        line-height: 2.25rem; /* 36px */        
+    }
+    h4 {
+        /* text-2xl	 */
+        font-size: 1.5rem; /* 24px */
+        line-height: 2rem; /* 32px */
+        font-weight: 600;
+    }
+    h5 {
+        /* text-xl	 */
+        font-size: 1.25rem; /* 20px */
+        line-height: 1.75rem; /* 28px */		
+    }
+    h6 {
+        /* text-lg */
+        font-size: 1.125rem; /* 18px */
+        line-height: 1.75rem; /* 28px */
+        padding-inline-start: 1rem;
+        text-indent: -1rem;
+    }
+    strong {
+        font-weight: 600;
+    }
+    sl-checkbox:not(:last-child) {
+        margin-right: 0.75rem; /* mr-3  */
+    }
+    sl-checkbox + sl-checkbox {
+        margin-top: 0.75rem; /* mt-3 */
+    }
+    sl-details {
+        width: 18rem; /* w-72 */
+    }
+    sl-drawer sl-details {
+        width: unset;
+    }
+    sl-details::part(content) {
+        padding-top: 0px
+    }
+    #open-button::part(base) {
+        background-color:white;
+        border: solid;
+        border-color: lightgray;
+        border-width: 2px;
+        
+    }
+
+</style>
