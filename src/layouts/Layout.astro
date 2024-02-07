@@ -15,36 +15,25 @@ const { title } = Astro.props;
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 
-        <!-- Tailwind for CSS styling -->
-        <!-- <link
-            href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css"
-            rel="stylesheet"
-        /> -->
-        <!-- htmx for AJAX requests -->
-        <script src="https://unpkg.com/htmx.org"></script>
-		<!-- Shoelace web components -->
-        <!-- <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/cdn/themes/dark.css"
-        /> -->
-		<link
-			rel="stylesheet"
-			href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/cdn/themes/light.css"
-		/>
-        <script
-            type="module"
-            src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/cdn/shoelace.js"
-        ></script>
-		<title>{title}</title>
+		<link rel="stylesheet" href="./node_modules/@shoelace-style/shoelace/dist/themes/light.css" />
+		<script type="module" src="./node_modules/@shoelace-style/shoelace/dist/shoelace.js"></script>
+
+		<title>Astro HTMX Bike</title>
 	</head>
 	<div class="flex justify-center mt-3">
-		<h1>Astro HTMX Bike</h1>
+		<h1>{title}</h1>
 	</div>
 	<body>
 		<slot />
 	</body>
 </html>
 <style is:global>
+	:not(:defined) {
+        visibility: hidden;
+    }
+	body {
+		background-color: var(--sl-color-neutral-50);
+	}
 	:root {
 		--accent: 136, 58, 234;
 		--accent-light: 224, 204, 250;
@@ -72,4 +61,39 @@ const { title } = Astro.props;
 			Courier New,
 			monospace;
 	}
+    h1 { 
+        /* text-3xl */
+        font-size: 1.875rem; /* 30px */
+        line-height: 2.25rem; /* 36px */
+    }
+    h3 {
+        /* text-3xl */
+        font-size: 1.875rem; /* 30px */
+        line-height: 2.25rem; /* 36px */ 
+		font-weight: 600;     
+    }
+    h4 {
+        /* text-2xl	 */
+        font-size: 1.5rem; /* 24px */
+        line-height: 2rem; /* 32px */
+        font-weight: 600;
+	}
+    sl-card > a:hover {
+        color: #0ea5e9;
+    } 
+    h5 {
+        /* text-xl	 */
+        font-size: 1.25rem; /* 20px */
+        line-height: 1.75rem; /* 28px */		
+    }
+    h6 {
+        /* text-lg */
+        font-size: 1.125rem; /* 18px */
+        line-height: 1.75rem; /* 28px */
+        padding-inline-start: 1rem;
+        text-indent: -1rem;
+    }
+    strong {
+        font-weight: 600;
+    }
 </style>
