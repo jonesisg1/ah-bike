@@ -1,0 +1,214 @@
+<script>
+function controlFromInput(fromSlider, fromInput, toInput, controlSlider) {
+    const [from, to] = getParsed(fromInput, toInput);
+    fillSlider(fromInput, toInput, '#e4e4e7', '#0284c7', controlSlider);
+    if (from > to) {
+        fromSlider.value = to;
+        fromInput.value = to;
+    } else {
+        fromSlider.value = from;
+    }
+}
+    
+function controlToInput(toSlider, fromInput, toInput, controlSlider) {
+    const [from, to] = getParsed(fromInput, toInput);
+    fillSlider(fromInput, toInput, '#e4e4e7', '#0284c7', controlSlider);
+    setToggleAccessible(toInput);
+    if (from <= to) {
+        toSlider.value = to;
+        toInput.value = to;
+    } else {
+        toInput.value = from;
+    }
+}
+
+function controlFromSlider(fromSlider, toSlider, fromInput) {
+  const [from, to] = getParsed(fromSlider, toSlider);
+  fillSlider(fromSlider, toSlider, '#e4e4e7', '#0284c7', toSlider);
+  if (from > to) {
+    fromSlider.value = to;
+    fromInput.value = to;
+  } else {
+    fromInput.value = from;
+  }
+}
+
+function controlToSlider(fromSlider, toSlider, toInput) {
+  const [from, to] = getParsed(fromSlider, toSlider);
+  fillSlider(fromSlider, toSlider, '#e4e4e7', '#0284c7', toSlider);
+  setToggleAccessible(toSlider);
+  if (from <= to) {
+    toSlider.value = to;
+    toInput.value = to;
+  } else {
+    toInput.value = from;
+    toSlider.value = from;
+  }
+}
+
+function getParsed(currentFrom, currentTo) {
+  const from = parseInt(currentFrom.value, 10);
+  const to = parseInt(currentTo.value, 10);
+  return [from, to];
+}
+
+function fillSlider(from, to, sliderColor, rangeColor, controlSlider) {
+    const rangeDistance = to.max-to.min;
+    const fromPosition = from.value - to.min;
+    const toPosition = to.value - to.min;
+    controlSlider.style.background = `linear-gradient(
+      to right,
+      ${sliderColor} 0%,
+      ${sliderColor} ${(fromPosition)/(rangeDistance)*100}%,
+      ${rangeColor} ${((fromPosition)/(rangeDistance))*100}%,
+      ${rangeColor} ${(toPosition)/(rangeDistance)*100}%, 
+      ${sliderColor} ${(toPosition)/(rangeDistance)*100}%, 
+      ${sliderColor} 100%)`;
+}
+
+function setToggleAccessible(currentTarget) {
+  const toSlider = document.querySelector('#toSlider');
+  if (Number(currentTarget.value) <= 0 ) {
+    // @ts-ignore
+    toSlider.style.zIndex = 2;
+  } else {
+    // @ts-ignore
+    toSlider.style.zIndex = 0;
+  }
+}
+
+const fromSlider: HTMLInputElement = document.querySelector('#fromSlider');
+const toSlider: HTMLInputElement = document.querySelector('#toSlider');
+const fromInput: HTMLInputElement = document.querySelector('#fromInput');
+const toInput: HTMLInputElement = document.querySelector('#toInput');
+fillSlider(fromSlider, toSlider, '#e4e4e7', '#0284c7', toSlider);
+setToggleAccessible(toSlider);
+
+fromSlider.oninput = () => controlFromSlider(fromSlider, toSlider, fromInput);
+toSlider.oninput = () => controlToSlider(fromSlider, toSlider, toInput);
+fromInput.oninput = () => controlFromInput(fromSlider, fromInput, toInput, toSlider);
+toInput.oninput = () => controlToInput(toSlider, fromInput, toInput, toSlider);
+
+const params = new URLSearchParams(window.location.search);
+const opts = params.get("opts");
+if (opts !== null) {
+    const options = JSON.parse(opts);
+    fromInput.value = options.priceFrom;
+    controlFromInput(fromSlider, fromInput, toInput, toSlider);
+    toInput.value = options.priceTo;
+    controlToInput(toSlider, fromInput, toInput, toSlider);
+}
+
+</script>
+<sl-details summary="Price" class="mt-3" open>
+<div class="range_container">
+    <div class="sliders_control">
+        <input id="fromSlider" type="range" value="100" min="100" max="15000"
+            hx-post="http://localhost:3001/rpc/html_bike_cards"
+            hx-target="#bike-cards"
+            hx-trigger="change"/>
+        <input id="toSlider" type="range" value="15000" min="100" max="15000"
+            hx-post="http://localhost:3001/rpc/html_bike_cards"
+            hx-target="#bike-cards"
+            hx-trigger="change"/>
+    </div>
+    <div class="form_control">
+        <div class="form_control_container">
+            <div class="form_control_container__time">Min</div>
+            £<input class="form_control_container__time__input" type="number" id="fromInput" value="100" min="100" max="15000"/>
+        </div>
+        <div class="form_control_container">
+            <div class="form_control_container__time">Max</div>
+            £<input class="form_control_container__time__input" type="number" id="toInput" value="15000" min="100" max="15000"/>
+        </div>
+    </div>
+</sl-details>
+</div>
+
+<style>
+
+.range_container {
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+  margin: 1rem auto 1rem;
+}
+
+.sliders_control {
+  position: relative;
+  min-height: 1rem;
+}
+
+.form_control {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--sl-input-font-size-medium);
+  /* color: #635a5a; */
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: all;
+  height: 1.25rem;
+  width: 1.25rem;
+  background-color: #0284c7;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+input[type=range]::-moz-range-thumb {
+  -webkit-appearance: none;
+  pointer-events: all;
+  height: 1.25rem;
+  width: 1.25rem;
+  background-color: #0284c7;
+  border-radius: 50%;
+  cursor: pointer;  
+  border: none; /*Removes extra border that FF applies*/
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+  background: #0ea5e9;
+}
+
+input[type=range]::-moz-range-thumb:hover {
+    background: #0ea5e9;
+}
+
+input[type="number"] {
+  /* color: #8a8383; */
+  width: 4rem;
+  /* height: 30px; */
+  font-size: var(--sl-input-font-size-medium);
+  border: none;
+}
+
+input[type="number"]:focus-visible {
+  background-color: var(--sl-input-background-color-focus);
+  border-color: var(--sl-input-border-color-focus);
+  box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-input-focus-ring-color);
+}
+
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button {  
+   opacity: 1;
+}
+
+input[type="range"] {
+  -webkit-appearance: none; 
+  appearance: none;
+  height: 6px;
+  width: 100%;
+  position: absolute;
+  background-color: #e4e4e7;
+  pointer-events: none;
+}
+
+#fromSlider {
+  height: 6;
+  background-color: transparent;
+  z-index: 1;
+}
+
+</style>

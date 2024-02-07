@@ -1,28 +1,66 @@
 ---
+import DualRangeSlider from "../components/DualRangeSlider.astro";
 import FilterDetails from "../components/Filter-Details.astro";
 import Layout from "../layouts/Layout.astro"
 ---
 <script>
+// const checkbox = document.querySelector('sl-checkbox');
+// checkbox.addEventListener('sl-change', event => {
+//     console.log(event.target.checked ? 'checked' : 'not checked');
+// });
 document.body.addEventListener(
     "htmx:configRequest",
     function (evt) {
-        let filters = {};
-        document.querySelectorAll("sl-checkbox[checked]").forEach((cur)=>{
-            // @ts-ignore
-            // console.log(cur.attributes['data-filter-type'])
-            filters[cur.attributes['data-filter-type'].nodeValue] ??= [];
-            // @ts-ignore
-            filters[cur.attributes['data-filter-type'].nodeValue].push(cur?.value);
-            // console.log(filters)
-        })
+        
+        let options = {};
+
         // @ts-ignore
-        evt.detail.parameters["_options"] = {
-            // @ts-ignore
-            order: document.getElementById("sort")?.value,
-            filters: filters
-        };
+        if (evt.detail.elt.attributes['hx-trigger'].value === 'load') { 
+            const params = new URLSearchParams(window.location.search);
+            const opts = params.get("opts");
+            if (opts !== null) {
+                options = JSON.parse(opts);
+                // @ts-ignore
+                (document.getElementById("sort") as HTMLInputElement).value = options.order;
+                // @ts-ignore
+                (document.getElementById("fromInput") as HTMLInputElement ).value = options.priceFrom;
+                // @ts-ignore
+                (document.getElementById("toInput") as HTMLInputElement ).value = options.priceTo;
+            }
+        } else {
+
+            let filters = {};
+            document.querySelectorAll("sl-checkbox[checked]").forEach((el:HTMLInputElement)=>{
+                // bodge for issue #1855
+                // @ts-ignore
+                if (el.id !== evt.detail.elt.id ) {
+                    filters[el.attributes['data-filter-type'].nodeValue] ??= [];
+                    filters[el.attributes['data-filter-type'].nodeValue].push(el.value);
+                }
+            })
+            // @ts-ignore -- bodge for issue #1855
+            if (evt.detail.elt.tagName === 'SL-CHECKBOX' && evt.detail.elt.attributes['checked'] === undefined) {
+                // console.log(evt.detail.elt.tagName)
+                // @ts-ignore
+                filters[evt.detail.elt.attributes['data-filter-type'].nodeValue] ??= [];
+                // @ts-ignore
+                filters[evt.detail.elt.attributes['data-filter-type'].nodeValue].push(evt.detail.elt.value);
+            }
+
+            options = {
+                order: (document.getElementById("sort") as HTMLInputElement)?.value,
+                filters: filters,
+                priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
+                priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value
+            };
+
+            const refresh = encodeURI(window.location.protocol + "//" + window.location.host + window.location.pathname + `?opts=${JSON.stringify(options)}`);    
+            window.history.pushState({ path: refresh }, '', refresh);
+        }
         // @ts-ignore
-        console.log(evt.detail.parameters);
+        options.host = 'http://localhost:3001';
+        // @ts-ignore
+        evt.detail.parameters["_options"] = options; 
     },
 );
 const drawer = document.querySelector(".drawer-placement-start");
@@ -76,19 +114,19 @@ mqSmall.addEventListener("change", function () {
         </div>
         <div id="filter-bar" class="min-w-min h-dvh side-bar">
             <sl-select
-                zzclass="w-72"
                 id="sort"
                 label="Sort by"
                 value="model_name-ASC"
-                hx-post="http://localhost:3001/rpc/html_bikes"
-                hx-target="#bike-grid"
+                hx-post="http://localhost:3001/rpc/html_bike_cards"
+                hx-target="#bike-cards"
                 hx-trigger="sl-change"
             >
                 <sl-option value="book_price_from-ASC">Price: Low-High</sl-option>
                 <sl-option value="book_price_from-DESC">Price: High-Low</sl-option>
                 <sl-option value="model_name-ASC">Model name: Low-High</sl-option>
                 <sl-option value="model_name-DESC">Model name: High-Low</sl-option>
-            </sl-select>    
+            </sl-select>
+            <DualRangeSlider></DualRangeSlider>
             <!-- <FilterDetails></FilterDetails> -->
             <div id="bike-filters"
                 hx-post="http://localhost:3001/rpc/html_bike_filters"
@@ -98,8 +136,8 @@ mqSmall.addEventListener("change", function () {
             </div>
         </div>
         <!-- <img src="trek/1120_21_33304_A_Primary.webp" loading="lazy"> -->
-        <div id="bike-grid" class="flex flex-wrap"
-            hx-post="http://localhost:3001/rpc/html_bikes"
+        <div id="bike-cards" class="flex flex-wrap"
+            hx-post="http://localhost:3001/rpc/html_bike_cards"
             hx-target="this"
             hx-trigger="load"
         >
@@ -114,37 +152,6 @@ mqSmall.addEventListener("change", function () {
     .side-bar {
         position: sticky;
         top: 0.75rem;
-    }
-    h1 { 
-        /* text-3xl */
-        font-size: 1.875rem; /* 30px */
-        line-height: 2.25rem; /* 36px */
-    }
-    h3 {
-        /* text-3xl */
-        font-size: 1.875rem; /* 30px */
-        line-height: 2.25rem; /* 36px */        
-    }
-    h4 {
-        /* text-2xl	 */
-        font-size: 1.5rem; /* 24px */
-        line-height: 2rem; /* 32px */
-        font-weight: 600;
-    }
-    h5 {
-        /* text-xl	 */
-        font-size: 1.25rem; /* 20px */
-        line-height: 1.75rem; /* 28px */		
-    }
-    h6 {
-        /* text-lg */
-        font-size: 1.125rem; /* 18px */
-        line-height: 1.75rem; /* 28px */
-        padding-inline-start: 1rem;
-        text-indent: -1rem;
-    }
-    strong {
-        font-weight: 600;
     }
     sl-checkbox:not(:last-child) {
         margin-right: 0.75rem; /* mr-3  */
@@ -167,6 +174,12 @@ mqSmall.addEventListener("change", function () {
         border-color: lightgray;
         border-width: 2px;
         
+    }
+    .zoom {
+        transition: transform .2s; /* Animation */
+    }
+    .zoom:hover {
+         transform: scale(1.025);
     }
 
 </style>

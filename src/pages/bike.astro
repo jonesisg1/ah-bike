@@ -1,0 +1,59 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+<script>
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
+    console.log('params', params);
+    document.body.addEventListener(
+        "htmx:configRequest",
+        function (evt) {
+            // @ts-ignore
+            evt.detail.parameters["_bike_id"] = params.id;
+            // @ts-ignore
+            console.log(evt.detail.parameters);
+        },
+    );
+</script>
+
+<Layout title="">
+<div class="container mx-auto" hx-headers='{"Accept": "text/html"}'>    
+    <div id="bike-detial" class="flex justify-center"
+        hx-post="http://localhost:3001/rpc/html_bike_detail"
+        hx-target="this"
+        hx-trigger="load"
+    >
+    </div>
+</div>
+</Layout>
+
+<style is:global>
+    table {
+        border-collapse: separate;
+        border-spacing: 0px;
+    }
+    th:first-of-type {
+        border-top-left-radius: var(--sl-border-radius-medium);
+    }
+    th:last-of-type {
+        border-top-right-radius: var(--sl-border-radius-medium);
+    }
+    td, tr {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+    th {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        text-align: left;
+        background-color: var(--sl-color-primary-600);
+        color: white;
+        /* text-2xl	 */
+        font-size: 1.5rem; /* 24px */
+        line-height: 2rem; /* 32px */
+        font-weight: 600;
+        padding-left: 0.75rem;  
+        border: 1px solid #ddd;
+     }
+     tr:nth-child(even){background-color:var(--sl-color-gray-100);}
+</style>
