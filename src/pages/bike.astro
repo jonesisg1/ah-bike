@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 const bikeApi = import.meta.env.PUBLIC_BIKE_API;
+const anonKey = import.meta.env.PUBLIC_ANON_KEY;
 ---
 <script>
     const urlSearchParams = new URLSearchParams(window.location.search);
@@ -13,8 +14,20 @@ const bikeApi = import.meta.env.PUBLIC_BIKE_API;
             evt.detail.parameters["_bike_id"] = params.id;
             // @ts-ignore
             evt.detail.path = main.dataset.bikeApi + evt.detail.path; 
+
+            if (main.dataset.bikeApi.includes('supabase')) {
+                // @ts-ignore
+                evt.detail.headers['Content-Profile'] = 'bikes_api';
+                // @ts-ignore
+                evt.detail.headers['apikey'] = main.dataset.anonKey;
+                // @ts-ignore
+                evt.detail.headers['Authorization'] = 'Bearer ' + main.dataset.anonKey;
+            }
         },
     );
+    const backButton = document.querySelector("#back-button");
+    // @ts-ignore
+    backButton.addEventListener("click", () => history.back());
 </script>
 
 <Layout title="">
@@ -22,7 +35,11 @@ const bikeApi = import.meta.env.PUBLIC_BIKE_API;
     class="container mx-auto" 
     hx-headers='{"Accept": "text/html"}'
     data-bike-api={bikeApi}
+    data-anon-key={anonKey}
     > 
+    <div class="fixed left-3 top-3 z-10">
+        <sl-icon-button name="arrow-left" id="back-button" style="font-size: 2rem;"></sl-icon-button>
+    </div>
     <div id="bike-detial" class="flex justify-center"
         hx-post="/rpc/html_bike_detail"
         hx-target="this"

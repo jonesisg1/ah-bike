@@ -2,6 +2,7 @@
 import DualRangeSlider from "../components/DualRangeSlider.astro";
 import Layout from "../layouts/Layout.astro"
 const bikeApi = import.meta.env.PUBLIC_BIKE_API;
+const anonKey = import.meta.env.PUBLIC_ANON_KEY;
 ---
 <script>
 // const checkbox = document.querySelector('sl-checkbox');
@@ -11,7 +12,8 @@ const bikeApi = import.meta.env.PUBLIC_BIKE_API;
 document.body.addEventListener(
     "htmx:configRequest",
     function (evt) {
-        // console.log(evt.detail)
+        // @ts-ignore
+        console.log(evt.detail)
         let options = {};
 
         // @ts-ignore
@@ -61,7 +63,16 @@ document.body.addEventListener(
         evt.detail.parameters["_options"] = options;
         const main = document.querySelector("main");
         // @ts-ignore
-        evt.detail.path = main.dataset.bikeApi + evt.detail.path; 
+        evt.detail.path = main.dataset.bikeApi + evt.detail.path;
+
+        if (main.dataset.bikeApi.includes('supabase')) {
+            // @ts-ignore
+            evt.detail.headers['Content-Profile'] = 'bikes_api';
+            // @ts-ignore
+            evt.detail.headers['apikey'] = main.dataset.anonKey;
+            // @ts-ignore
+            evt.detail.headers['Authorization'] = 'Bearer ' + main.dataset.anonKey;
+        }
     },
 );
 const drawer = document.querySelector(".drawer-placement-start");
@@ -102,6 +113,7 @@ mqSmall.addEventListener("change", function () {
         class="container flex mx-auto m-3"
         hx-headers='{"Accept": "text/html"}'
         data-bike-api={bikeApi}
+        data-anon-key={anonKey}
     >
         <sl-drawer
             label="Filters"
@@ -169,13 +181,6 @@ mqSmall.addEventListener("change", function () {
     }
     sl-details::part(content) {
         padding-top: 0px
-    }
-    #open-button::part(base) {
-        background-color:white;
-        border: solid;
-        border-color: lightgray;
-        border-width: 2px;
-        
     }
     .zoom {
         transition: transform .2s; /* Animation */

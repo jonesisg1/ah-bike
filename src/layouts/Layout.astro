@@ -28,6 +28,13 @@ const { title } = Astro.props;
 	</body>
 </html>
 <style is:global>
+	sl-icon-button::part(base) {
+        background-color:white;
+        border: solid;
+        border-color: lightgray;
+        border-width: 2px;
+        
+    }
 	:not(:defined) {
         visibility: hidden;
     }
