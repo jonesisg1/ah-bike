@@ -101,14 +101,14 @@ if (opts !== null) {
 
 </script>
 <sl-details summary="Price" class="mt-3" open>
-<div class="range_container">
+<div id="price-range" class="range_container">
     <div class="sliders_control">
         <input id="fromSlider" type="range" value="100" min="100" max="15000"
-            hx-post="http://localhost:3001/rpc/html_bike_cards"
+            hx-post="/rpc/html_bike_cards"
             hx-target="#bike-cards"
             hx-trigger="change"/>
         <input id="toSlider" type="range" value="15000" min="100" max="15000"
-            hx-post="http://localhost:3001/rpc/html_bike_cards"
+            hx-post="/rpc/html_bike_cards"
             hx-target="#bike-cards"
             hx-trigger="change"/>
     </div>

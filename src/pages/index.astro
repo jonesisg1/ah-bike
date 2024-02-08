@@ -1,7 +1,7 @@
 ---
 import DualRangeSlider from "../components/DualRangeSlider.astro";
-import FilterDetails from "../components/Filter-Details.astro";
 import Layout from "../layouts/Layout.astro"
+const bikeApi = import.meta.env.PUBLIC_BIKE_API;
 ---
 <script>
 // const checkbox = document.querySelector('sl-checkbox');
@@ -11,7 +11,7 @@ import Layout from "../layouts/Layout.astro"
 document.body.addEventListener(
     "htmx:configRequest",
     function (evt) {
-        
+        // console.log(evt.detail)
         let options = {};
 
         // @ts-ignore
@@ -58,9 +58,10 @@ document.body.addEventListener(
             window.history.pushState({ path: refresh }, '', refresh);
         }
         // @ts-ignore
-        options.host = 'http://localhost:3001';
+        evt.detail.parameters["_options"] = options;
+        const main = document.querySelector("main");
         // @ts-ignore
-        evt.detail.parameters["_options"] = options; 
+        evt.detail.path = main.dataset.bikeApi + evt.detail.path; 
     },
 );
 const drawer = document.querySelector(".drawer-placement-start");
@@ -100,6 +101,7 @@ mqSmall.addEventListener("change", function () {
     <main 
         class="container flex mx-auto m-3"
         hx-headers='{"Accept": "text/html"}'
+        data-bike-api={bikeApi}
     >
         <sl-drawer
             label="Filters"
@@ -109,7 +111,7 @@ mqSmall.addEventListener("change", function () {
         >
             <!-- <sl-button slot="footer" variant="primary">Close</sl-button> -->
         </sl-drawer>
-        <div class="fixed left-3 top-3">
+        <div class="fixed left-3 top-3 z-10">
             <sl-icon-button name="sliders" id="open-button" style="font-size: 2rem;"></sl-icon-button>
         </div>
         <div id="filter-bar" class="min-w-min h-dvh side-bar">
@@ -117,7 +119,7 @@ mqSmall.addEventListener("change", function () {
                 id="sort"
                 label="Sort by"
                 value="model_name-ASC"
-                hx-post="http://localhost:3001/rpc/html_bike_cards"
+                hx-post="/rpc/html_bike_cards"
                 hx-target="#bike-cards"
                 hx-trigger="sl-change"
             >
@@ -129,7 +131,7 @@ mqSmall.addEventListener("change", function () {
             <DualRangeSlider></DualRangeSlider>
             <!-- <FilterDetails></FilterDetails> -->
             <div id="bike-filters"
-                hx-post="http://localhost:3001/rpc/html_bike_filters"
+                hx-post="/rpc/html_bike_filters"
                 hx-target="this"
                 hx-trigger="load"                    
             >
@@ -137,7 +139,7 @@ mqSmall.addEventListener("change", function () {
         </div>
         <!-- <img src="trek/1120_21_33304_A_Primary.webp" loading="lazy"> -->
         <div id="bike-cards" class="flex flex-wrap"
-            hx-post="http://localhost:3001/rpc/html_bike_cards"
+            hx-post="/rpc/html_bike_cards"
             hx-target="this"
             hx-trigger="load"
         >
