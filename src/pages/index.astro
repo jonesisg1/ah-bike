@@ -14,10 +14,12 @@ document.body.addEventListener(
     function (evt) {
         // @ts-ignore
         // console.log(evt.detail)
-        let options = {};
-
         // @ts-ignore
-        if (evt.detail.elt.attributes['hx-trigger'].value === 'load') { 
+        const triggerType = evt.detail.triggeringEvent?.type ?? 'load'
+        let options = {};
+      
+        if (triggerType === 'load') { 
+            // console.log('Setup from URLSearch');
             const params = new URLSearchParams(window.location.search);
             const opts = params.get("opts");
             if (opts !== null) {
@@ -32,32 +34,47 @@ document.body.addEventListener(
         } else {
 
             let filters = {};
-            document.querySelectorAll("sl-checkbox[checked]").forEach((el:HTMLInputElement)=>{
-                // bodge for issue #1855
-                // @ts-ignore
-                if (el.id !== evt.detail.elt.id ) {
-                    filters[el.attributes['data-filter-type'].nodeValue] ??= [];
-                    filters[el.attributes['data-filter-type'].nodeValue].push(el.value);
-                }
-            })
-            // @ts-ignore -- bodge for issue #1855
-            if (evt.detail.elt.tagName === 'SL-CHECKBOX' && evt.detail.elt.attributes['checked'] === undefined) {
-                // console.log(evt.detail.elt.tagName)
-                // @ts-ignore
-                filters[evt.detail.elt.attributes['data-filter-type'].nodeValue] ??= [];
-                // @ts-ignore
-                filters[evt.detail.elt.attributes['data-filter-type'].nodeValue].push(evt.detail.elt.value);
-            }
+            // @ts-ignore
+            if (evt.detail.triggeringEvent?.type === 'post-filter-reset') {
+                console.log('reset')
+                options = {
+                    order: (document.getElementById("sort") as HTMLInputElement)?.value,
+                    filters: {},
+                    priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
+                    priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value
+                };
 
-            options = {
-                order: (document.getElementById("sort") as HTMLInputElement)?.value,
-                filters: filters,
-                priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
-                priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value
-            };
+            } else
+             {
+                document.querySelectorAll("sl-checkbox[checked]").forEach((el:HTMLInputElement)=>{
+                    // bodge for issue #1855
+                    // console.log(`${el.id} - ${evt.detail.elt.id}`)
+                    // @ts-ignore
+                    if (el.id !== evt.detail.elt.id ) {
+                        filters[el.attributes['data-filter-type'].nodeValue] ??= [];
+                        filters[el.attributes['data-filter-type'].nodeValue].push(el.value);
+                    }
+                })
+                // @ts-ignore -- bodge for issue #1855
+                if (evt.detail.elt.tagName === 'SL-CHECKBOX' && evt.detail.elt.attributes['checked'] === undefined) {
+                    // console.log(evt.detail.elt.tagName)
+                    // @ts-ignore
+                    filters[evt.detail.elt.attributes['data-filter-type'].nodeValue] ??= [];
+                    // @ts-ignore
+                    filters[evt.detail.elt.attributes['data-filter-type'].nodeValue].push(evt.detail.elt.value);
+                }
+
+                options = {
+                    order: (document.getElementById("sort") as HTMLInputElement)?.value,
+                    filters: filters,
+                    priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
+                    priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value
+                };
+            }
 
             const refresh = encodeURI(window.location.protocol + "//" + window.location.host + window.location.pathname + `?opts=${JSON.stringify(options)}`);    
             window.history.pushState({ path: refresh }, '', refresh);
+            console.log(filters)
         }
         // @ts-ignore
         evt.detail.parameters["_options"] = options;
@@ -79,10 +96,18 @@ const drawer = document.querySelector(".drawer-placement-start");
 const openButton = document.querySelector("#open-button");
 const filterBar = document.querySelector("#filter-bar");
 
+document.querySelector('#filter-reset').addEventListener("click", () => {
+    document.querySelector('body').dispatchEvent(new Event('pre-filter-reset'));
+    document.querySelectorAll("sl-checkbox[checked]").forEach((el:HTMLInputElement)=>{
+        el.checked = false;
+    })
+    document.querySelector('body').dispatchEvent(new Event('post-filter-reset'));
+})
+
  // @ts-ignore
 openButton.addEventListener("click", () => drawer.show());
 
-function mqAction(mediaQuery) {
+async function mqAction(mediaQuery) {
     if (mediaQuery.matches) {
         // If media query matches
         drawer.append(filterBar);
@@ -94,8 +119,8 @@ function mqAction(mediaQuery) {
             .prepend(filterBar);
         filterBar.classList.add('h-dvh')
         openButton.className = "invisible";
-         // @ts-ignore
-        // drawer.hide();  -- This causes error on build
+        //  @ts-ignore
+        drawer.hide();
     }
 }
 // Create a MediaQueryList object
@@ -140,6 +165,10 @@ mqSmall.addEventListener("change", function () {
                 <sl-option value="model_name-ASC">Model name: Low-High</sl-option>
                 <sl-option value="model_name-DESC">Model name: High-Low</sl-option>
             </sl-select>
+            <sl-button id="filter-reset" class="w-full mt-3">Clear Filters
+                <sl-icon slot="prefix" name="funnel"></sl-icon>
+                <sl-icon slot="suffix" name="arrow-counterclockwise"></sl-icon>
+            </sl-button>
             <DualRangeSlider></DualRangeSlider>
             <!-- <FilterDetails></FilterDetails> -->
             <div id="bike-filters"
@@ -153,7 +182,7 @@ mqSmall.addEventListener("change", function () {
         <div id="bike-cards" class="flex flex-wrap"
             hx-post="/rpc/html_bike_cards"
             hx-target="this"
-            hx-trigger="load"
+            hx-trigger="load, post-filter-reset from:body"
         >
         </div>
     </main>

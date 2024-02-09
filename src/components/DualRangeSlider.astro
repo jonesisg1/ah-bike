@@ -99,27 +99,35 @@ if (opts !== null) {
     controlToInput(toSlider, fromInput, toInput, toSlider);
 }
 
+// Triggered from the sl-button #filter-reset
+document.querySelector('body').addEventListener("pre-filter-reset", () => {
+    fromInput.value = fromInput.attributes['min'].nodeValue;
+    toInput.value = toInput.attributes['max'].nodeValue;
+})
+
+document.querySelector('body').addEventListener("post-filter-reset", () => {
+    controlFromInput(fromSlider, fromInput, toInput, toSlider);
+    controlToInput(toSlider, fromInput, toInput, toSlider);
+})
+
 </script>
-<sl-details summary="Price" class="mt-3" open>
-    
-        <div class="form_control flex-1 flex-wrap mx-3">
+<sl-details summary="Price" class="mt-3" open> 
+        <div class="form_control flex-1 flex-wrap mx-3 mt-2">
             <div class="flex w-full justify-between">
-                <div class="form_control_container">
-                    <!-- <div class="form_control_container__time">Min</div> -->
-                    £<input class="form_control_container__time__input" type="number" id="fromInput" value="100" min="100" max="15000"/>
-                </div>
-                <div class="form_control_container">
-                    <!-- <div class="form_control_container__time">Max</div> -->
-                    £<input class="form_control_container__time__input" type="number" id="toInput" value="15000" min="100" max="15000"/>
-                </div>
+                <sl-input class="form_control_container__time__input w-24" type="number" size="small" id="fromInput" value="100" step="10"min="100" max="15000">
+                    <sl-icon name="currency-pound" slot="prefix"></sl-icon>
+                </sl-input>
+                <sl-input class="form_control_container__time__input w-24" type="number" size="small" id="toInput" value="15000" step="10"min="100" max="15000">
+                    <sl-icon name="currency-pound" slot="prefix"></sl-icon>
+                </sl-input>
             </div>
             <div id="price-range" class="range_container">
             <div class="sliders_control">
-                <input id="fromSlider" type="range" value="100" min="100" max="15000"
+                <input id="fromSlider" type="range" value="100" step="10" min="100" max="15000"
                     hx-post="/rpc/html_bike_cards"
                     hx-target="#bike-cards"
                     hx-trigger="change"/>
-                <input id="toSlider" type="range" value="15000" min="100" max="15000"
+                <input id="toSlider" type="range" value="15000" step="10" min="100" max="15000"
                     hx-post="/rpc/html_bike_cards"
                     hx-target="#bike-cards"
                     hx-trigger="change"/>
@@ -128,9 +136,7 @@ if (opts !== null) {
     </div>
 </sl-details>
 
-
 <style>
-
 .range_container {
   display: flex;
   flex-direction: column;
@@ -151,9 +157,10 @@ if (opts !== null) {
   /* color: #635a5a; */
 }
 
-.form_control_container__time__input {
-    text-align: center;
-}   
+sl-input::part(input) {
+    padding-left: 0px;
+    padding-right: 3px;
+}
 
 input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -218,5 +225,4 @@ input[type="range"] {
   background-color: transparent;
   z-index: 1;
 }
-
 </style>
