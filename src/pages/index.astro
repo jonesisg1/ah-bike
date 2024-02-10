@@ -5,18 +5,27 @@ const bikeApi = import.meta.env.PUBLIC_BIKE_API;
 const anonKey = import.meta.env.PUBLIC_ANON_KEY;
 ---
 <script>
-// const checkbox = document.querySelector('sl-checkbox');
-// checkbox.addEventListener('sl-change', event => {
-//     console.log(event.target.checked ? 'checked' : 'not checked');
-// });
+
+interface HTMXEvent extends Event {
+  detail: any;
+}
+interface Options {
+    order?: string;
+    priceFrom?: string;
+    priceTo?: string;
+    filters?: any;
+    results?: number;
+}
+
 document.body.addEventListener(
     "htmx:configRequest",
-    function (evt) {
-        // @ts-ignore
-        // console.log(evt.detail)
-        // @ts-ignore
+    function (evt: HTMXEvent) {
+        
+        // console.log(evt.detail.elt.id);
+
         const triggerType = evt.detail.triggeringEvent?.type ?? 'load'
-        let options = {};
+        let options: Options = {};
+        let results = 10;
       
         if (triggerType === 'load') { 
             // console.log('Setup from URLSearch');
@@ -24,25 +33,24 @@ document.body.addEventListener(
             const opts = params.get("opts");
             if (opts !== null) {
                 options = JSON.parse(opts);
-                // @ts-ignore
                 (document.getElementById("sort") as HTMLInputElement).value = options.order;
-                // @ts-ignore
                 (document.getElementById("fromInput") as HTMLInputElement ).value = options.priceFrom;
-                // @ts-ignore
                 (document.getElementById("toInput") as HTMLInputElement ).value = options.priceTo;
+                results = options.results;
                 // Update fill in range slider
                 document.querySelector('body').dispatchEvent(new Event('post-filter-reset'));
             }
         } else {
 
             let filters = {};
-            // @ts-ignore
+            results = document.querySelectorAll("#bike-cards > * sl-card").length;
             if (evt.detail.triggeringEvent?.type === 'post-filter-reset') {
                 options = {
                     order: (document.getElementById("sort") as HTMLInputElement)?.value,
                     filters: {},
                     priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
-                    priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value
+                    priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value,
+                    results: results
                 };
 
             } else
@@ -50,44 +58,47 @@ document.body.addEventListener(
                 document.querySelectorAll("sl-checkbox[checked]").forEach((el:HTMLInputElement)=>{
                     // bodge for issue #1855
                     // console.log(`${el.id} - ${evt.detail.elt.id}`)
-                    // @ts-ignore
                     if (el.id !== evt.detail.elt.id ) {
                         filters[el.attributes['data-filter-type'].nodeValue] ??= [];
                         filters[el.attributes['data-filter-type'].nodeValue].push(el.value);
                     }
                 })
-                // @ts-ignore -- bodge for issue #1855
+                // bodge for issue #1855
                 if (evt.detail.elt.tagName === 'SL-CHECKBOX' && evt.detail.elt.attributes['checked'] === undefined) {
                     // console.log(evt.detail.elt.tagName)
-                    // @ts-ignore
                     filters[evt.detail.elt.attributes['data-filter-type'].nodeValue] ??= [];
-                    // @ts-ignore
                     filters[evt.detail.elt.attributes['data-filter-type'].nodeValue].push(evt.detail.elt.value);
+                }
+                if (evt.detail?.headers['HX-Target'] === 'bike-cards') {
+                    if (evt.detail.elt.id === 'next-button') {
+                        results += 10;
+                    }
                 }
 
                 options = {
                     order: (document.getElementById("sort") as HTMLInputElement)?.value,
                     filters: filters,
                     priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
-                    priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value
+                    priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value,
+                    results: results
                 };
+                
             }
 
             const refresh = encodeURI(window.location.protocol + "//" + window.location.host + window.location.pathname + `?opts=${JSON.stringify(options)}`);    
             window.history.pushState({ path: refresh }, '', refresh);
         }
-        // @ts-ignore
         evt.detail.parameters["_options"] = options;
+        if (evt.detail?.headers['HX-Target'] === 'bike-cards') {
+            evt.detail.parameters["_row_limit"] = results;
+        }
+
         const main = document.querySelector("main");
-        // @ts-ignore
         evt.detail.path = main.dataset.bikeApi + evt.detail.path;
 
         if (main.dataset.bikeApi.includes('supabase')) {
-            // @ts-ignore
             evt.detail.headers['Content-Profile'] = 'bikes_api';
-            // @ts-ignore
             evt.detail.headers['apikey'] = main.dataset.anonKey;
-            // @ts-ignore
             evt.detail.headers['Authorization'] = 'Bearer ' + main.dataset.anonKey;
         }
     },
@@ -181,11 +192,23 @@ mqSmall.addEventListener("change", function () {
             </div>
         </div>
         <!-- <img src="trek/1120_21_33304_A_Primary.webp" loading="lazy"> -->
+        <div>
         <div id="bike-cards" class="flex flex-wrap"
             hx-post="/rpc/html_bike_cards"
             hx-target="this"
             hx-trigger="load, post-filter-reset from:body"
         >
+        </div>
+        <div class="p-3 w-full">
+            <sl-button id="next-button" class="w-full"
+                hx-post="/rpc/html_bike_cards"
+                hx-target="#bike-cards"
+                hx-trigger="click"
+            >Next 10 bikes
+                <sl-icon slot="prefix" name="download"></sl-icon>
+                <sl-icon slot="suffix" name="download"></sl-icon>			  
+            </sl-button>
+        </div>
         </div>
     </main>
 </Layout>
