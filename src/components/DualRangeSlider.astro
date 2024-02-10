@@ -89,17 +89,7 @@ toSlider.oninput = () => controlToSlider(fromSlider, toSlider, toInput);
 fromInput.oninput = () => controlFromInput(fromSlider, fromInput, toInput, toSlider);
 toInput.oninput = () => controlToInput(toSlider, fromInput, toInput, toSlider);
 
-const params = new URLSearchParams(window.location.search);
-const opts = params.get("opts");
-if (opts !== null) {
-    const options = JSON.parse(opts);
-    fromInput.value = options.priceFrom;
-    controlFromInput(fromSlider, fromInput, toInput, toSlider);
-    toInput.value = options.priceTo;
-    controlToInput(toSlider, fromInput, toInput, toSlider);
-}
-
-// Triggered from the sl-button #filter-reset
+// Triggered from the sl-button #filter-reset and also page load.
 document.querySelector('body').addEventListener("pre-filter-reset", () => {
     fromInput.value = fromInput.attributes['min'].nodeValue;
     toInput.value = toInput.attributes['max'].nodeValue;
@@ -108,6 +98,7 @@ document.querySelector('body').addEventListener("pre-filter-reset", () => {
 document.querySelector('body').addEventListener("post-filter-reset", () => {
     controlFromInput(fromSlider, fromInput, toInput, toSlider);
     controlToInput(toSlider, fromInput, toInput, toSlider);
+    fillSlider(fromSlider, toSlider, '#e4e4e7', '#0284c7', toSlider);
 })
 
 </script>

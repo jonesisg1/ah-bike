@@ -30,13 +30,14 @@ document.body.addEventListener(
                 (document.getElementById("fromInput") as HTMLInputElement ).value = options.priceFrom;
                 // @ts-ignore
                 (document.getElementById("toInput") as HTMLInputElement ).value = options.priceTo;
+                // Update fill in range slider
+                document.querySelector('body').dispatchEvent(new Event('post-filter-reset'));
             }
         } else {
 
             let filters = {};
             // @ts-ignore
             if (evt.detail.triggeringEvent?.type === 'post-filter-reset') {
-                console.log('reset')
                 options = {
                     order: (document.getElementById("sort") as HTMLInputElement)?.value,
                     filters: {},
@@ -74,7 +75,6 @@ document.body.addEventListener(
 
             const refresh = encodeURI(window.location.protocol + "//" + window.location.host + window.location.pathname + `?opts=${JSON.stringify(options)}`);    
             window.history.pushState({ path: refresh }, '', refresh);
-            console.log(filters)
         }
         // @ts-ignore
         evt.detail.parameters["_options"] = options;
@@ -119,8 +119,10 @@ async function mqAction(mediaQuery) {
             .prepend(filterBar);
         filterBar.classList.add('h-dvh')
         openButton.className = "invisible";
-        //  @ts-ignore
-        drawer.hide();
+        try {
+            //  @ts-ignore
+            drawer.hide();
+        } catch(e) {}
     }
 }
 // Create a MediaQueryList object
