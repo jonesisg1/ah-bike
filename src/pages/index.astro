@@ -16,6 +16,24 @@ interface Options {
     filters?: any;
     results?: number;
 }
+document.body.addEventListener(
+    "htmx:afterSwap",
+    function (evt: HTMXEvent) {
+        if (evt.detail.elt.id === 'bike-cards') {
+            const EoF = document.getElementById("EoF")
+            if ( EoF ) {
+                document.getElementById("next-button").setAttribute("disabled", "");
+                document.querySelectorAll("#next-button > sl-icon").forEach((e) => {
+                    e.setAttribute('name', 'sign-stop')
+                })
+            } else {
+                document.getElementById("next-button").removeAttribute("disabled");
+                document.querySelectorAll("#next-button > sl-icon").forEach((e) => {
+                    e.setAttribute('name', 'download')
+                })
+            }
+        }
+    });
 
 document.body.addEventListener(
     "htmx:configRequest",
@@ -44,7 +62,8 @@ document.body.addEventListener(
 
             let filters = {};
             results = document.querySelectorAll("#bike-cards > * sl-card").length;
-            if (evt.detail.triggeringEvent?.type === 'post-filter-reset') {
+            if (triggerType === 'post-filter-reset') {
+                results = 10;
                 options = {
                     order: (document.getElementById("sort") as HTMLInputElement)?.value,
                     filters: {},
@@ -70,7 +89,9 @@ document.body.addEventListener(
                     filters[evt.detail.elt.attributes['data-filter-type'].nodeValue].push(evt.detail.elt.value);
                 }
                 if (evt.detail?.headers['HX-Target'] === 'bike-cards') {
-                    if (evt.detail.elt.id === 'next-button') {
+                    if (triggerType === 'sl-change') {
+                        results = 10;
+                    } else if (evt.detail.elt.id === 'next-button') {
                         results += 10;
                     }
                 }
@@ -88,6 +109,7 @@ document.body.addEventListener(
             const refresh = encodeURI(window.location.protocol + "//" + window.location.host + window.location.pathname + `?opts=${JSON.stringify(options)}`);    
             window.history.pushState({ path: refresh }, '', refresh);
         }
+        // console.log(`trigger: ${triggerType}, results: ${results}`)
         evt.detail.parameters["_options"] = options;
         if (evt.detail?.headers['HX-Target'] === 'bike-cards') {
             evt.detail.parameters["_row_limit"] = results;
