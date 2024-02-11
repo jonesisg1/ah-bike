@@ -186,7 +186,7 @@ mqSmall.addEventListener("change", function () {
         <div class="fixed left-3 top-3 z-10">
             <sl-icon-button name="sliders" id="open-button" style="font-size: 2rem;"></sl-icon-button>
         </div>
-        <div id="filter-bar" class="min-w-min side-bar h-dvh overflow-auto px-3">
+        <div id="filter-bar" class="min-w-min side-bar">
             <sl-select
                 id="sort"
                 label="Sort by"
@@ -242,6 +242,9 @@ mqSmall.addEventListener("change", function () {
     .side-bar {
         position: sticky;
         top: 0.75rem;
+        height: calc(100dvh - 0.75rem);
+        overflow: auto;
+        padding: 0 0.75rem 0.75rem 0.75rem; 
     }
     sl-checkbox:not(:last-child) {
         margin-right: 0.75rem; /* mr-3  */
