@@ -1,3 +1,12 @@
+---
+interface Props {
+	minPrice: number;
+    maxPrice: number;
+    step:number;
+}
+
+const { minPrice, maxPrice, step } = Astro.props;
+---
 <script>
 function controlFromInput(fromSlider, fromInput, toInput, controlSlider) {
     const [from, to] = getParsed(fromInput, toInput);
@@ -86,8 +95,8 @@ setToggleAccessible(toSlider);
 
 fromSlider.oninput = () => controlFromSlider(fromSlider, toSlider, fromInput);
 toSlider.oninput = () => controlToSlider(fromSlider, toSlider, toInput);
-fromInput.oninput = () => controlFromInput(fromSlider, fromInput, toInput, toSlider);
-toInput.oninput = () => controlToInput(toSlider, fromInput, toInput, toSlider);
+fromInput.addEventListener("sl-input", () => controlFromInput(fromSlider, fromInput, toInput, toSlider));
+toInput.addEventListener("sl-input", () => controlToInput(toSlider, fromInput, toInput, toSlider));
 
 // Triggered from the sl-button #filter-reset and also page load.
 document.querySelector('body').addEventListener("pre-filter-reset", () => {
@@ -105,20 +114,30 @@ document.querySelector('body').addEventListener("post-filter-reset", () => {
 <sl-details summary="Price" class="mt-3" open> 
         <div class="form_control flex-1 flex-wrap mx-3 mt-2">
             <div class="flex w-full justify-between">
-                <sl-input class="form_control_container__time__input w-24" type="number" size="small" id="fromInput" value="100" step="10"min="100" max="15000">
+                <sl-input class="form_control_container__time__input" type="number" id="fromInput" 
+                    value={minPrice} step={step} min={minPrice} max={maxPrice}
+                    hx-post="/rpc/html_bike_cards"
+                    hx-target="#bike-cards"
+                    hx-trigger="sl-change"
+                >
                     <sl-icon name="currency-pound" slot="prefix"></sl-icon>
                 </sl-input>
-                <sl-input class="form_control_container__time__input w-24" type="number" size="small" id="toInput" value="15000" step="10"min="100" max="15000">
+                <sl-input class="form_control_container__time__input" type="number" id="toInput" 
+                    value={maxPrice} step={step} min={minPrice} max={maxPrice}
+                    hx-post="/rpc/html_bike_cards"
+                    hx-target="#bike-cards"
+                    hx-trigger="sl-change"
+                >
                     <sl-icon name="currency-pound" slot="prefix"></sl-icon>
                 </sl-input>
             </div>
             <div id="price-range" class="range_container">
             <div class="sliders_control">
-                <input id="fromSlider" type="range" value="100" step="10" min="100" max="15000"
+                <input id="fromSlider" type="range" value={minPrice} step={step} min={minPrice} max={maxPrice}
                     hx-post="/rpc/html_bike_cards"
                     hx-target="#bike-cards"
                     hx-trigger="change"/>
-                <input id="toSlider" type="range" value="15000" step="10" min="100" max="15000"
+                <input id="toSlider" type="range" value={maxPrice} step={step} min={minPrice} max={maxPrice}
                     hx-post="/rpc/html_bike_cards"
                     hx-target="#bike-cards"
                     hx-trigger="change"/>
@@ -146,11 +165,6 @@ document.querySelector('body').addEventListener("post-filter-reset", () => {
   justify-content: space-between;
   font-size: var(--sl-input-font-size-medium);
   /* color: #635a5a; */
-}
-
-sl-input::part(input) {
-    padding-left: 0px;
-    padding-right: 3px;
 }
 
 input[type=range]::-webkit-slider-thumb {
@@ -182,23 +196,17 @@ input[type=range]::-moz-range-thumb:hover {
     background: #0ea5e9;
 }
 
-input[type="number"] {
-  /* color: #8a8383; */
-  width: 4rem;
-  /* height: 30px; */
-  font-size: var(--sl-input-font-size-medium);
-  border: none;
+sl-input[type="number"] {
+   width: 6.5rem;
 }
 
-input[type="number"]:focus-visible {
-  background-color: var(--sl-input-background-color-focus);
-  border-color: var(--sl-input-border-color-focus);
-  box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-input-focus-ring-color);
+sl-input::part(input) {
+    padding-left: 0px;
+    padding-right: 3px;
 }
 
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button {  
-   opacity: 1;
+sl-icon {
+    margin-bottom: -1px;
 }
 
 input[type="range"] {

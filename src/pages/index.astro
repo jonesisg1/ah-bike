@@ -204,7 +204,7 @@ mqSmall.addEventListener("change", function () {
                 <sl-icon slot="prefix" name="funnel"></sl-icon>
                 <sl-icon slot="suffix" name="arrow-counterclockwise"></sl-icon>
             </sl-button>
-            <DualRangeSlider></DualRangeSlider>
+            <DualRangeSlider minPrice={0}, maxPrice={15000}, step={10}></DualRangeSlider>
             <!-- <FilterDetails></FilterDetails> -->
             <div id="bike-filters"
                 hx-post="/rpc/html_bike_filters"
