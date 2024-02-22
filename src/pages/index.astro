@@ -22,15 +22,17 @@ document.body.addEventListener(
         if (evt.detail.elt.id === 'bike-cards') {
             const EoF = document.getElementById("EoF")
             if ( EoF ) {
-                document.getElementById("next-button").setAttribute("disabled", "");
-                document.querySelectorAll("#next-button > sl-icon").forEach((e) => {
-                    e.setAttribute('name', 'sign-stop')
-                })
+                document.getElementById("next-button").classList.add('hidden');
+                // setAttribute("disabled", "");
+                // document.querySelectorAll("#next-button > sl-icon").forEach((e) => {
+                //     e.setAttribute('name', 'sign-stop')
+                // })
             } else {
-                document.getElementById("next-button").removeAttribute("disabled");
-                document.querySelectorAll("#next-button > sl-icon").forEach((e) => {
-                    e.setAttribute('name', 'download')
-                })
+                document.getElementById("next-button").classList.remove('hidden');
+                // removeAttribute("disabled");
+                // document.querySelectorAll("#next-button > sl-icon").forEach((e) => {
+                //     e.setAttribute('name', 'download')
+                // })
             }
         }
     });
