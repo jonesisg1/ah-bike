@@ -18,10 +18,9 @@ begin
 		for filter_value in (select * from json_array_elements_text( _filters->filter_name )) loop
 			v_query := v_query || 
 				case when prev_filter_name is null or prev_filter_name = filter_name then ' OR ' else ') AND (' end || 
-				filter_name || 
 				case when filter_name in ('fork_travel', 'wheel_sizes') 
-					then format($l$ ~ '(^| )%1$s:'$l$, filter_value) 
-					else format($e$ = '%1$s'$e$,filter_value) 
+					then format($l$ string_to_array(%1$s,',') @> '{%2$s}' $l$,filter_name, filter_value) 
+					else format($e$ %1$s = '%2$s'$e$,filter_name, filter_value) 
 				end;
 			prev_filter_name := filter_name;
 		end loop;

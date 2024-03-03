@@ -18,5 +18,6 @@ CREATE TABLE bikes.bike (
 	book_price_from int4 NULL,
 	book_price_to int4 NULL,
 	img_src text NULL,
+	bike_url text NULL,
 	CONSTRAINT bike_pkey PRIMARY KEY (bike_id)
 );

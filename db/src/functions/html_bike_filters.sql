@@ -25,8 +25,10 @@ union
 		string_agg(bikes.html_filter_checkbox('frame_material', b.fm,
 			_options::jsonb#>'{filters,frame_material}' @> format('"%1$s"',b.fm)::jsonb ), '')
 		) as html
-	 from (select distinct frame_material as fm 
-		  from bikes.bike order by 1) as b
+	 from (select distinct frame_material as fm
+		  from bikes.bike
+		  where frame_material is not null
+		  order by 1) as b
 union
 	select format(
 		'<sl-details summary="%1$s" class="mt-3" open>
@@ -48,7 +50,9 @@ union
 			_options::jsonb#>'{filters,wheel_sizes}' @> format('"%1$s"',b.ws::text)::jsonb ), '')
 		) as html
 	 from (select distinct wheel_size as ws
-		  from bikes.bike_wheel_size order by 1) as b
+		  from bikes.bike_wheel_size 
+		  where wheel_size is not null
+		  order by 1) as b
 union
 	select format(
 		'<sl-details summary="%1$s" class="mt-3" open>
@@ -70,6 +74,17 @@ union
 			_options::jsonb#>'{filters,model_year}' @> format('"%1$s"',b.my::text)::jsonb ), '')
 		) as html
  	 from (select distinct model_year as my
+		  from bikes.bike order by 1) as b
+union
+	select format(
+		'<sl-details summary="%1$s" class="mt-3" open>
+			%2$s		
+		</sl-details>',
+		'Brand',
+		string_agg(bikes.html_filter_checkbox('brand', b.fm,
+			_options::jsonb#>'{filters,brand}' @> format('"%1$s"',b.fm)::jsonb ), '')
+		) as html
+	 from (select distinct brand as fm 
 		  from bikes.bike order by 1) as b
 order by 1
 ) as main;

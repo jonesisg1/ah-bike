@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION bikes.html_bike_detail(_bike_id integer)
 AS $function$
 	select format(
 		'<div class="m-3 min-w-72">
-			<img loading="lazy" src="%2$s/%1$s.webp" alt="Image of %1$s" class="mx-auto"/>
+			<img loading="lazy" src="%2$s/%1$s" alt="Image of %1$s" class="mx-auto"/>
 			<h3 class="pb-3" style="text-align: center;">%3$s %4$s <small>(%6$s)</small></h3>
 			<table class="table-auto">
 				<thead>
