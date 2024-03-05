@@ -27,7 +27,7 @@ begin
 	    and b.book_price_from between %4$s and %5$s
 	    and b.bike_type = '%6$s'
 	   order by b.%1$s
-	   limit %2$s) $$,
+	   limit %2$s) sq $$,
 	coalesce(replace(_options::json->>'order','-',' '),'model_name'),
 	_row_limit,
     bikes.build_where_sql(_options::json->'filters'),
