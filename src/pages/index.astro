@@ -151,6 +151,7 @@ document.querySelector('#rg-bike-type').addEventListener("sl-change", ()=>{
 openButton.addEventListener("click", () => drawer.show());
 
 async function mqAction(mediaQuery) {
+    const mainHeader = document.querySelector('.main-header');
     if (mediaQuery.matches) {
         // If media query matches (bar hidden)
         drawer.append(filterBar);
@@ -158,12 +159,16 @@ async function mqAction(mediaQuery) {
         filterBar.classList.remove('h-dvh', 'side-bar-hidden');
         document.querySelector('#rb-mountain').innerHTML = 'M';
         document.querySelector('#rb-road').innerHTML = 'R';
+        mainHeader.classList.add('justify-between');
+        mainHeader.classList.remove('justify-center', 'gap-5');
     } else {
         document.querySelector("main").prepend(filterBar);
         filterBar.classList.add('side-bar-hidden', 'h-dvh');
         openButton.classList.add('invisible');
         document.querySelector('#rb-mountain').innerHTML = 'Mountain';
         document.querySelector('#rb-road').innerHTML = 'Road';
+        mainHeader.classList.remove('justify-between');
+        mainHeader.classList.add('justify-center', 'gap-6');        
         try {
             //  @ts-ignore
             drawer.hide();
@@ -181,89 +186,87 @@ mqSmall.addEventListener("change", function () {
         
 </script>
 <Layout title="Astro HTMX Bike">
-    <div class="main-container">
-        <div class="main-header flex">
-            <sl-icon-button name="sliders" id="open-button" style="font-size: 1.5rem;" class="ml-3 justify-self-start self-center"></sl-icon-button>
-            <div class="flex justify-center w-full">
+    <div class="page-container">
+        <div class="main-header container flex mx-auto mx-3">
+            <sl-icon-button name="sliders" id="open-button" style="font-size: 1.5rem;" class="ml-3 self-center"></sl-icon-button>
             <h3 class="self-center">Astro &lt;<span class="text-[#3d72d7] font-bold">/</span>&gt; Bike</h3>
-                <sl-radio-group id="rg-bike-type" value="Mountain" class="ml-4 self-center">
-                    <sl-radio-button id="rb-mountain" value="Mountain">Mountain</sl-radio-button>
-                    <sl-radio-button id="rb-road" value="Road">Road</sl-radio-button>                    
-                </sl-radio-group>                  
-            </div>
+            <sl-radio-group id="rg-bike-type" value="Mountain" class="mr-3 self-center">
+                <sl-radio-button id="rb-mountain" value="Mountain">Mountain</sl-radio-button>
+                <sl-radio-button id="rb-road" value="Road">Road</sl-radio-button>                    
+            </sl-radio-group>
         </div>
-    <div class="main-content">
-    <main 
-        class="container flex mx-auto mx-3"
-        hx-headers='{"Accept": "text/html"}'
-        data-bike-api={bikeApi}
-        data-anon-key={anonKey}
-    >
-        <sl-drawer
-            label="Filters"
-            placement="start"
-            class="drawer-placement-start"
-            style="--size: 90%;"
-        >
-            <!-- <sl-button slot="footer" variant="primary">Close</sl-button> -->
-        </sl-drawer>
-        <!-- <div class="fixed left-3 top-16 z-10">
-            <sl-icon-button name="sliders" id="open-button" style="font-size: 1.5rem;"></sl-icon-button>
-        </div> -->
-        <div id="filter-bar" class="min-w-min side-bar">
-            <sl-select
-                id="sort"
-                label="Sort by"
-                value="model_name-ASC"
-                hx-post="/rpc/html_bike_cards"
-                hx-target="#bike-cards"
-                hx-trigger="sl-change"
+        <div class="main-content">
+            <main 
+                class="container flex mx-auto mx-3"
+                hx-headers='{"Accept": "text/html"}'
+                data-bike-api={bikeApi}
+                data-anon-key={anonKey}
             >
-                <sl-option value="book_price_from-ASC">Price: Low-High</sl-option>
-                <sl-option value="book_price_from-DESC">Price: High-Low</sl-option>
-                <sl-option value="model_name-ASC">Model name: Low-High</sl-option>
-                <sl-option value="model_name-DESC">Model name: High-Low</sl-option>
-            </sl-select>
-            <sl-button id="filter-reset" class="w-full mt-3">Clear Filters
-                <sl-icon slot="prefix" name="funnel"></sl-icon>
-                <sl-icon slot="suffix" name="arrow-counterclockwise"></sl-icon>
-            </sl-button>
-            <DualRangeSlider minPrice={0}, maxPrice={15000}, step={10}></DualRangeSlider>
-            <!-- <FilterDetails></FilterDetails> -->
-            <div id="bike-filters"
-                hx-post="/rpc/html_bike_filters"
-                hx-target="this"
-                hx-trigger="load, bike-type-changed from:body"                    
-            >
-            </div>
+                <sl-drawer
+                    label="Filters"
+                    placement="start"
+                    class="drawer-placement-start"
+                    style="--size: 90%;"
+                >
+                    <!-- <sl-button slot="footer" variant="primary">Close</sl-button> -->
+                </sl-drawer>
+                <!-- <div class="fixed left-3 top-16 z-10">
+                    <sl-icon-button name="sliders" id="open-button" style="font-size: 1.5rem;"></sl-icon-button>
+                </div> -->
+                <div id="filter-bar" class="min-w-min side-bar">
+                    <sl-select
+                        id="sort"
+                        label="Sort by"
+                        value="model_name-ASC"
+                        hx-post="/rpc/html_bike_cards"
+                        hx-target="#bike-cards"
+                        hx-trigger="sl-change"
+                    >
+                        <sl-option value="book_price_from-ASC">Price: Low-High</sl-option>
+                        <sl-option value="book_price_from-DESC">Price: High-Low</sl-option>
+                        <sl-option value="model_name-ASC">Model name: Low-High</sl-option>
+                        <sl-option value="model_name-DESC">Model name: High-Low</sl-option>
+                    </sl-select>
+                    <sl-button id="filter-reset" class="w-full mt-3">Clear Filters
+                        <sl-icon slot="prefix" name="funnel"></sl-icon>
+                        <sl-icon slot="suffix" name="arrow-counterclockwise"></sl-icon>
+                    </sl-button>
+                    <DualRangeSlider minPrice={0}, maxPrice={15000}, step={10}></DualRangeSlider>
+                    <!-- <FilterDetails></FilterDetails> -->
+                    <div id="bike-filters"
+                        hx-post="/rpc/html_bike_filters"
+                        hx-target="this"
+                        hx-trigger="load, bike-type-changed from:body"                    
+                    >
+                    </div>
+                </div>
+                <!-- <img src="trek/1120_21_33304_A_Primary.webp" loading="lazy"> -->
+                <div>
+                <div id="bike-cards" class="flex flex-wrap"
+                    hx-post="/rpc/html_bike_cards"
+                    hx-target="this"
+                    hx-trigger="load, post-filter-reset from:body"
+                >
+                </div>
+                <div class="p-3 w-full">
+                    <sl-button id="next-button" class="w-full"
+                        hx-post="/rpc/html_bike_cards"
+                        hx-target="#bike-cards"
+                        hx-trigger="click"
+                    >Next 10 bikes
+                        <sl-icon slot="prefix" name="download"></sl-icon>
+                        <sl-icon slot="suffix" name="download"></sl-icon>			  
+                    </sl-button>
+                </div>
+                </div>
+            </main>
         </div>
-        <!-- <img src="trek/1120_21_33304_A_Primary.webp" loading="lazy"> -->
-        <div>
-        <div id="bike-cards" class="flex flex-wrap"
-            hx-post="/rpc/html_bike_cards"
-            hx-target="this"
-            hx-trigger="load, post-filter-reset from:body"
-        >
-        </div>
-        <div class="p-3 w-full">
-            <sl-button id="next-button" class="w-full"
-                hx-post="/rpc/html_bike_cards"
-                hx-target="#bike-cards"
-                hx-trigger="click"
-            >Next 10 bikes
-                <sl-icon slot="prefix" name="download"></sl-icon>
-                <sl-icon slot="suffix" name="download"></sl-icon>			  
-            </sl-button>
-        </div>
-        </div>
-    </main>
-    </div>
     </div>
 </Layout>
 
 <style is:global>
 
-    .main-container {  display: grid;
+    .page-container {  display: grid;
         grid-template-columns: 1fr;
         grid-template-rows: 4rem;
         gap: 0px 0px;
