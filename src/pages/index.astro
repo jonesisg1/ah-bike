@@ -161,6 +161,7 @@ async function mqAction(mediaQuery) {
         document.querySelector('#rb-road').innerHTML = 'R';
         mainHeader.classList.add('justify-between');
         mainHeader.classList.remove('justify-center', 'gap-5');
+        document.querySelector('.main-header>h3').classList.add('text-2xl');
     } else {
         document.querySelector("main").prepend(filterBar);
         filterBar.classList.add('side-bar-hidden', 'h-dvh');
@@ -168,7 +169,8 @@ async function mqAction(mediaQuery) {
         document.querySelector('#rb-mountain').innerHTML = 'Mountain';
         document.querySelector('#rb-road').innerHTML = 'Road';
         mainHeader.classList.remove('justify-between');
-        mainHeader.classList.add('justify-center', 'gap-6');        
+        mainHeader.classList.add('justify-center', 'gap-6');
+        document.querySelector('.main-header>h3').classList.remove('text-2xl');
         try {
             //  @ts-ignore
             drawer.hide();
