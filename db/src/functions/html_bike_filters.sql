@@ -7,18 +7,20 @@ CREATE OR REPLACE FUNCTION bikes.html_bike_filters(_options text DEFAULT '{}'::t
 AS $function$
 select string_agg(html, '') from (
 	select format(
-		'<sl-details summary="%1$s" class="mt-3" open>
+		'<sl-details summary="%1$s" class="mt-3 text-filter" open>
 			%2$s		
 		</sl-details>',
 		'Category',
 		string_agg(bikes.html_filter_checkbox('category', b.cat,
 			_options::jsonb#>'{filters,category}' @> format('"%1$s"',b.cat)::jsonb ), '')
 		) as html
-	 from (select distinct category as cat 
-		  from bikes.bike order by 1) as b
+	 from (select distinct category as cat
+		  from bikes.bike 
+		  where bike_type = coalesce((_options::json->>'bikeType'), 'Mountain')
+		  order by 1) as b
 union
 	select format(
-		'<sl-details summary="%1$s" class="mt-3" open>
+		'<sl-details summary="%1$s" class="mt-3 text-filter" open>
 			%2$s		
 		</sl-details>',
 		'Frame Material',
@@ -28,18 +30,23 @@ union
 	 from (select distinct frame_material as fm
 		  from bikes.bike
 		  where frame_material is not null
+		  and bike_type = coalesce((_options::json->>'bikeType'), 'Mountain')
 		  order by 1) as b
 union
-	select format(
+	select case when coalesce((_options::json->>'bikeType'), 'Mountain') = 'Mountain' then 
+		format(
 		'<sl-details summary="%1$s" class="mt-3" open>
 			%2$s		
 		</sl-details>',
 		'Fork Travel',
 		string_agg(bikes.html_filter_checkbox('fork_travel', b.ft::text,
 			_options::jsonb#>'{filters,fork_travel}' @> format('"%1$s"',b.ft::text)::jsonb ), '')
-		) as html
+		)
+		else '' end as html
 	 from (select distinct fork_travel as ft
-		  from bikes.bike_fork_travel order by 1) as b
+		  from bikes.bike_fork_travel
+		  where coalesce((_options::json->>'bikeType'), 'Mountain') = 'Mountain'
+		  order by 1) as b
 union
 	select format(
 		'<sl-details summary="%1$s" class="mt-3" open>
@@ -50,20 +57,25 @@ union
 			_options::jsonb#>'{filters,wheel_sizes}' @> format('"%1$s"',b.ws::text)::jsonb ), '')
 		) as html
 	 from (select distinct wheel_size as ws
-		  from bikes.bike_wheel_size 
+		  from bikes.bike_wheel_size w join bikes.bike b on b.bike_id = w.bike_id
 		  where wheel_size is not null
+		  and bike_type = coalesce((_options::json->>'bikeType'), 'Mountain')
 		  order by 1) as b
 union
-	select format(
+	select case when coalesce((_options::json->>'bikeType'), 'Mountain') = 'Mountain' then 
+		format(
 		'<sl-details summary="%1$s" class="mt-3" open>
 			%2$s		
 		</sl-details>',
 		'Rear Travel',
 		string_agg(bikes.html_filter_checkbox('rear_travel', b.rt::text,
 			_options::jsonb#>'{filters,rear_travel}' @> format('"%1$s"',b.rt::text)::jsonb ), '')
-		) as html
+		)
+		else '' end as html
  	 from (select distinct rear_travel as rt
-		  from bikes.bike order by 1) as b
+		  from bikes.bike 
+		  where coalesce((_options::json->>'bikeType'), 'Mountain') = 'Mountain'
+		  order by 1) as b
 union
 	select format(
 		'<sl-details summary="%1$s" class="mt-3" open>
@@ -74,10 +86,12 @@ union
 			_options::jsonb#>'{filters,model_year}' @> format('"%1$s"',b.my::text)::jsonb ), '')
 		) as html
  	 from (select distinct model_year as my
-		  from bikes.bike order by 1) as b
+		  from bikes.bike 
+		  where bike_type = coalesce((_options::json->>'bikeType'), 'Mountain')
+		  order by 1) as b
 union
 	select format(
-		'<sl-details summary="%1$s" class="mt-3" open>
+		'<sl-details summary="%1$s" class="mt-3 text-filter" open>
 			%2$s		
 		</sl-details>',
 		'Brand',
@@ -85,7 +99,9 @@ union
 			_options::jsonb#>'{filters,brand}' @> format('"%1$s"',b.fm)::jsonb ), '')
 		) as html
 	 from (select distinct brand as fm 
-		  from bikes.bike order by 1) as b
+		  from bikes.bike 
+		  where bike_type = coalesce((_options::json->>'bikeType'), 'Mountain')
+		  order by 1) as b
 order by 1
 ) as main;
 $function$

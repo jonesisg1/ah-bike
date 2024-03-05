@@ -5,7 +5,7 @@
 -- DROP TABLE bikes.bike;
 
 CREATE TABLE bikes.bike (
-	bike_id int4 NOT NULL,
+	bike_id serial4 NOT NULL,
 	created_at timestamptz NULL,
 	bike_alt_ref text NULL,
 	brand text NULL,
@@ -19,5 +19,6 @@ CREATE TABLE bikes.bike (
 	book_price_to int4 NULL,
 	img_src text NULL,
 	bike_url text NULL,
+	bike_type text NULL,
 	CONSTRAINT bike_pkey PRIMARY KEY (bike_id)
 );

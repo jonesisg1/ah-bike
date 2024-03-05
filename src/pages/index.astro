@@ -15,10 +15,12 @@ interface Options {
     priceTo?: string;
     filters?: any;
     results?: number;
+    bikeType?: string;
 }
 document.body.addEventListener(
     "htmx:afterSwap",
     function (evt: HTMXEvent) {
+        // console.log(`htmx:afterSwap - elt.id = ${evt.detail.elt.id}`)
         if (evt.detail.elt.id === 'bike-cards') {
             const EoF = document.getElementById("EoF")
             if ( EoF ) {
@@ -56,6 +58,7 @@ document.body.addEventListener(
                 (document.getElementById("sort") as HTMLInputElement).value = options.order;
                 (document.getElementById("fromInput") as HTMLInputElement ).value = options.priceFrom;
                 (document.getElementById("toInput") as HTMLInputElement ).value = options.priceTo;
+                (document.getElementById("rg-bike-type") as HTMLInputElement ).value = options.bikeType;
                 results = options.results;
                 // Update fill in range slider
                 document.querySelector('body').dispatchEvent(new Event('post-filter-reset'));
@@ -71,25 +74,20 @@ document.body.addEventListener(
                     filters: {},
                     priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
                     priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value,
+                    bikeType: (document.getElementById("rg-bike-type") as HTMLInputElement)?.value,
                     results: results
                 };
 
             } else
              {
-                document.querySelectorAll("sl-checkbox[checked]").forEach((el:HTMLInputElement)=>{
-                    // bodge for issue #1855
-                    // console.log(`${el.id} - ${evt.detail.elt.id}`)
-                    if (el.id !== evt.detail.elt.id ) {
+                // Can't use .querySelectorAll("sl-checkbox[checked]")  // see issue #1855 (won't fix :(
+                document.querySelectorAll("sl-checkbox").forEach((el:HTMLInputElement)=>{
+                    if (el.checked) {
                         filters[el.attributes['data-filter-type'].nodeValue] ??= [];
                         filters[el.attributes['data-filter-type'].nodeValue].push(el.value);
                     }
-                })
-                // bodge for issue #1855
-                if (evt.detail.elt.tagName === 'SL-CHECKBOX' && evt.detail.elt.attributes['checked'] === undefined) {
-                    // console.log(evt.detail.elt.tagName)
-                    filters[evt.detail.elt.attributes['data-filter-type'].nodeValue] ??= [];
-                    filters[evt.detail.elt.attributes['data-filter-type'].nodeValue].push(evt.detail.elt.value);
-                }
+                });
+
                 if (evt.detail?.headers['HX-Target'] === 'bike-cards') {
                     if (triggerType === 'sl-change') {
                         results = 10;
@@ -103,6 +101,7 @@ document.body.addEventListener(
                     filters: filters,
                     priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
                     priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value,
+                    bikeType: (document.getElementById("rg-bike-type") as HTMLInputElement)?.value,
                     results: results
                 };
                 
@@ -131,29 +130,40 @@ const drawer = document.querySelector(".drawer-placement-start");
 const openButton = document.querySelector("#open-button");
 const filterBar = document.querySelector("#filter-bar");
 
-document.querySelector('#filter-reset').addEventListener("click", () => {
+const resetFilters = () => {
+    // console.log('resetFilters');
     document.querySelector('body').dispatchEvent(new Event('pre-filter-reset'));
     document.querySelectorAll("sl-checkbox[checked]").forEach((el:HTMLInputElement)=>{
         el.checked = false;
     })
     document.querySelector('body').dispatchEvent(new Event('post-filter-reset'));
-})
+}
+
+document.querySelector('#filter-reset').addEventListener("click", resetFilters);
+
+document.querySelector('#rg-bike-type').addEventListener("sl-change", ()=>{
+    // console.log('bike type changed');
+    resetFilters();
+    document.querySelector('body').dispatchEvent(new Event('bike-type-changed'));
+});
 
  // @ts-ignore
 openButton.addEventListener("click", () => drawer.show());
 
 async function mqAction(mediaQuery) {
     if (mediaQuery.matches) {
-        // If media query matches
+        // If media query matches (bar hidden)
         drawer.append(filterBar);
         openButton.classList.remove('invisible');
-        filterBar.classList.remove('h-dvh')
+        filterBar.classList.remove('h-dvh', 'side-bar-hidden');
+        document.querySelector('#rb-mountain').innerHTML = 'M';
+        document.querySelector('#rb-road').innerHTML = 'R';
     } else {
-        document
-            .querySelector("main")
-            .prepend(filterBar);
-        filterBar.classList.add('h-dvh')
-        openButton.className = "invisible";
+        document.querySelector("main").prepend(filterBar);
+        filterBar.classList.add('side-bar-hidden', 'h-dvh');
+        openButton.classList.add('invisible');
+        document.querySelector('#rb-mountain').innerHTML = 'Mountain';
+        document.querySelector('#rb-road').innerHTML = 'Road';
         try {
             //  @ts-ignore
             drawer.hide();
@@ -161,7 +171,7 @@ async function mqAction(mediaQuery) {
     }
 }
 // Create a MediaQueryList object
-var mqSmall = window.matchMedia("(max-width: 600px)");
+var mqSmall = window.matchMedia("(max-width: 656px)");
 // Call listener function at run time
 mqAction(mqSmall);
 // Attach listener function on state changes
@@ -171,8 +181,20 @@ mqSmall.addEventListener("change", function () {
         
 </script>
 <Layout title="Astro HTMX Bike">
+    <div class="main-container">
+        <div class="main-header flex">
+            <sl-icon-button name="sliders" id="open-button" style="font-size: 1.5rem;" class="ml-3 justify-self-start self-center"></sl-icon-button>
+            <div class="flex justify-center w-full">
+            <h3 class="self-center">Astro &lt;<span class="text-[#3d72d7] font-bold">/</span>&gt; Bike</h3>
+                <sl-radio-group id="rg-bike-type" value="Mountain" class="ml-4 self-center">
+                    <sl-radio-button id="rb-mountain" value="Mountain">Mountain</sl-radio-button>
+                    <sl-radio-button id="rb-road" value="Road">Road</sl-radio-button>                    
+                </sl-radio-group>                  
+            </div>
+        </div>
+    <div class="main-content">
     <main 
-        class="container flex mx-auto m-3"
+        class="container flex mx-auto mx-3"
         hx-headers='{"Accept": "text/html"}'
         data-bike-api={bikeApi}
         data-anon-key={anonKey}
@@ -185,9 +207,9 @@ mqSmall.addEventListener("change", function () {
         >
             <!-- <sl-button slot="footer" variant="primary">Close</sl-button> -->
         </sl-drawer>
-        <div class="fixed left-3 top-3 z-10">
-            <sl-icon-button name="sliders" id="open-button" style="font-size: 2rem;"></sl-icon-button>
-        </div>
+        <!-- <div class="fixed left-3 top-16 z-10">
+            <sl-icon-button name="sliders" id="open-button" style="font-size: 1.5rem;"></sl-icon-button>
+        </div> -->
         <div id="filter-bar" class="min-w-min side-bar">
             <sl-select
                 id="sort"
@@ -211,7 +233,7 @@ mqSmall.addEventListener("change", function () {
             <div id="bike-filters"
                 hx-post="/rpc/html_bike_filters"
                 hx-target="this"
-                hx-trigger="load"                    
+                hx-trigger="load, bike-type-changed from:body"                    
             >
             </div>
         </div>
@@ -235,24 +257,52 @@ mqSmall.addEventListener("change", function () {
         </div>
         </div>
     </main>
+    </div>
+    </div>
 </Layout>
 
 <style is:global>
+
+    .main-container {  display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 4rem;
+        gap: 0px 0px;
+        grid-auto-flow: row;
+        grid-template-areas:
+            "main-header"
+            "main-content";
+        height: 100dvh; overflow: auto;
+    }
+
+    .main-header { grid-area: main-header; }
+
+    .main-content { grid-area: main-content; height: calc(100dvh - 4rem); overflow: auto; }
+
+
     :not(:defined) {
         visibility: hidden;
     }
     .side-bar {
         position: sticky;
-        top: 0.75rem;
-        --height: calc(100dvh - 0.75rem);
+        top: 0;
         overflow: auto;
         padding: 0 0.75rem 0.75rem 0.75rem; 
     }
+
+    .side-bar-hidden { height: calc(100dvh - 4rem); overflow: auto; }
+
     sl-checkbox:not(:last-child) {
         margin-right: 0.75rem; /* mr-3  */
     }
     sl-checkbox + sl-checkbox {
         margin-top: 0.75rem; /* mt-3 */
+    }
+    .text-filter>sl-checkbox::part(base) {
+        min-width: 6rem;
+    }
+    sl-checkbox::part(base) {
+        min-width: 3.5rem;
+        margin-left: 0.5rem;
     }
     sl-details {
         width: 18rem; /* w-72 */
