@@ -47,7 +47,7 @@ document.body.addEventListener(
 
         const triggerType = evt.detail.triggeringEvent?.type ?? 'load'
         let options: Options = {};
-        let results = 10;
+        let results = 12;
       
         if (triggerType === 'load') { 
             // console.log('Setup from URLSearch');
@@ -68,7 +68,7 @@ document.body.addEventListener(
             let filters = {};
             results = document.querySelectorAll("#bike-cards > * sl-card").length;
             if (triggerType === 'post-filter-reset') {
-                results = 10;
+                results = 12;
                 options = {
                     order: (document.getElementById("sort") as HTMLInputElement)?.value,
                     filters: {},
@@ -90,9 +90,9 @@ document.body.addEventListener(
 
                 if (evt.detail?.headers['HX-Target'] === 'bike-cards') {
                     if (triggerType === 'sl-change') {
-                        results = 10;
+                        results = 12;
                     } else if (evt.detail.elt.id === 'next-button') {
-                        results += 10;
+                        results += 12;
                     }
                 }
 
@@ -157,8 +157,8 @@ async function mqAction(mediaQuery) {
         drawer.append(filterBar);
         openButton.classList.remove('invisible');
         filterBar.classList.remove('h-dvh', 'side-bar-hidden');
-        document.querySelector('#rb-mountain').innerHTML = 'M';
-        document.querySelector('#rb-road').innerHTML = 'R';
+        document.querySelector('#rb-mountain-text').innerHTML = '';
+        document.querySelector('#rb-road-text').innerHTML = '';
         mainHeader.classList.add('justify-between');
         mainHeader.classList.remove('justify-center', 'gap-5');
         document.querySelector('.main-header>h3').classList.add('text-2xl');
@@ -166,10 +166,10 @@ async function mqAction(mediaQuery) {
         document.querySelector("main").prepend(filterBar);
         filterBar.classList.add('side-bar-hidden', 'h-dvh');
         openButton.classList.add('invisible');
-        document.querySelector('#rb-mountain').innerHTML = 'Mountain';
-        document.querySelector('#rb-road').innerHTML = 'Road';
+        document.querySelector('#rb-mountain-text').innerHTML = 'Mountain';
+        document.querySelector('#rb-road-text').innerHTML = 'Road';
         mainHeader.classList.remove('justify-between');
-        mainHeader.classList.add('justify-center', 'gap-6');
+        mainHeader.classList.add('justify-center', 'gap-5');
         document.querySelector('.main-header>h3').classList.remove('text-2xl');
         try {
             //  @ts-ignore
@@ -185,7 +185,7 @@ mqAction(mqSmall);
 mqSmall.addEventListener("change", function () {
     mqAction(mqSmall);
 });
-        
+
 </script>
 <Layout title="Astro HTMX Bike">
     <div class="page-container">
@@ -193,8 +193,14 @@ mqSmall.addEventListener("change", function () {
             <sl-icon-button name="sliders" id="open-button" style="font-size: 1.5rem;" class="ml-3 self-center"></sl-icon-button>
             <h3 class="self-center">Astro &lt;<span class="text-[#3d72d7] font-bold">/</span>&gt; Bike</h3>
             <sl-radio-group id="rg-bike-type" value="Mountain" class="mr-3 self-center">
-                <sl-radio-button id="rb-mountain" value="Mountain">Mountain</sl-radio-button>
-                <sl-radio-button id="rb-road" value="Road">Road</sl-radio-button>                    
+                <sl-radio-button id="rb-mountain" value="Mountain">
+                    <sl-icon slot="prefix" src="src/assets/mountain.svg" style="font-size: 1.5rem;"></sl-icon>
+                    <span id="rb-mountain-text"></span>
+                </sl-radio-button>
+                <sl-radio-button id="rb-road" value="Road">
+                    <sl-icon slot="prefix" src="src/assets/road.svg" style="font-size: 1.5rem;"></sl-icon>
+                    <span id="rb-road-text"></span>
+                </sl-radio-button>                    
             </sl-radio-group>
         </div>
         <div class="main-content">
@@ -255,7 +261,7 @@ mqSmall.addEventListener("change", function () {
                         hx-post="/rpc/html_bike_cards"
                         hx-target="#bike-cards"
                         hx-trigger="click"
-                    >Next 10 bikes
+                    >Show more bikes
                         <sl-icon slot="prefix" name="download"></sl-icon>
                         <sl-icon slot="suffix" name="download"></sl-icon>			  
                     </sl-button>
@@ -268,6 +274,20 @@ mqSmall.addEventListener("change", function () {
 
 <style is:global>
 
+    .bike-card-wrapper {
+        flex-grow: 1;
+        margin: 0.3666rem;
+        flex-basis: 20rem;
+    }
+    @media (max-width: 656px) {
+        #rg-bike-type>sl-radio-button::part(label) {
+            padding-right: 0;
+        }
+        .bike-card-wrapper {
+            max-width: 100%;
+            margin: 0.75rem; /* mx-3 */
+        }
+    }
     .page-container {  display: grid;
         grid-template-columns: 1fr;
         grid-template-rows: 4rem;
@@ -278,11 +298,8 @@ mqSmall.addEventListener("change", function () {
             "main-content";
         height: 100dvh; overflow: auto;
     }
-
     .main-header { grid-area: main-header; }
-
     .main-content { grid-area: main-content; height: calc(100dvh - 4rem); overflow: auto; }
-
 
     :not(:defined) {
         visibility: hidden;
@@ -293,7 +310,6 @@ mqSmall.addEventListener("change", function () {
         overflow: auto;
         padding: 0 0.75rem 0.75rem 0.75rem; 
     }
-
     .side-bar-hidden { height: calc(100dvh - 4rem); overflow: auto; }
 
     sl-checkbox:not(:last-child) {
