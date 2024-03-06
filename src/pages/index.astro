@@ -1,6 +1,8 @@
 ---
 import DualRangeSlider from "../components/DualRangeSlider.astro";
 import Layout from "../layouts/Layout.astro"
+import mountainImage from "../assets/mountain.svg"
+import roadImage from "../assets/road.svg"
 const bikeApi = import.meta.env.PUBLIC_BIKE_API;
 const anonKey = import.meta.env.PUBLIC_ANON_KEY;
 ---
@@ -194,11 +196,11 @@ mqSmall.addEventListener("change", function () {
             <h3 class="self-center">Astro &lt;<span class="text-[#3d72d7] font-bold">/</span>&gt; Bike</h3>
             <sl-radio-group id="rg-bike-type" value="Mountain" class="mr-3 self-center">
                 <sl-radio-button id="rb-mountain" value="Mountain">
-                    <sl-icon slot="prefix" src="src/assets/mountain.svg" style="font-size: 1.5rem;"></sl-icon>
+                    <sl-icon slot="prefix" src={mountainImage.src} style="font-size: 1.5rem;"></sl-icon>
                     <span id="rb-mountain-text"></span>
                 </sl-radio-button>
                 <sl-radio-button id="rb-road" value="Road">
-                    <sl-icon slot="prefix" src="src/assets/road.svg" style="font-size: 1.5rem;"></sl-icon>
+                    <sl-icon slot="prefix" src={roadImage.src} style="font-size: 1.5rem;"></sl-icon>
                     <span id="rb-road-text"></span>
                 </sl-radio-button>                    
             </sl-radio-group>
