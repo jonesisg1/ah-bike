@@ -15,6 +15,7 @@ begin
 	  	 		   from bikes.bike_view sq
 	  	 	 	  where %3$s
  	  	 	 	   and  sq.bike_type = '%6$s'
+ 	  	 	 	   and ((lower(sq.model_name) like '%7$s') or ('%7$s' = ''))
 		    		and sq.book_price_from between %4$s and %5$s) = max(row_cnt)
 		    	then '<div id="EoF" class="invisible"></div>'
 		    	else ''
@@ -26,6 +27,7 @@ begin
 	  where %3$s
 	    and b.book_price_from between %4$s and %5$s
 	    and b.bike_type = '%6$s'
+	    and ((lower(b.model_name) like '%7$s') or ('%7$s' = ''))
 	   order by b.%1$s
 	   limit %2$s) sq $$,
 	coalesce(replace(_options::json->>'order','-',' '),'model_name'),
@@ -33,7 +35,8 @@ begin
     bikes.build_where_sql(_options::json->'filters'),
 	coalesce((_options::json->>'priceFrom'), '0')::numeric * 100,
 	coalesce((_options::json->>'priceTo'), '9999999')::numeric * 100,
-	coalesce((_options::json->>'bikeType'), 'Mountain')
+	coalesce((_options::json->>'bikeType'), 'Mountain'),
+	lower(coalesce('%%'||(_options::json->>'search')||'%%', ''))
   );
 --   raise notice 'SQL: %', v_query;
   execute v_query into v_return;
