@@ -67,7 +67,7 @@ document.body.addEventListener(
                 document.querySelector('body').dispatchEvent(new Event('post-filter-reset'));
             }
         } else {
-            console.log(`event trigger: ${evt.detail.elt.id}, triggerType: ${triggerType}`);
+            // console.log(`event trigger: ${evt.detail.elt.id}, triggerType: ${triggerType}`);
             let filters = {};
             if (triggerType === 'post-filter-reset') {
                 results = 12;
@@ -173,15 +173,10 @@ async function mqAction(mediaQuery) {
         // If media query matches (bar hidden)
         drawer.append(filterBar);
         openButton.classList.remove('removed');
-        
         for (const el of document.querySelectorAll('.page-header')){
             el.classList.add('justify-between');
             el.classList.remove('justify-center', 'gap-3');
         }
-        // document.querySelector('#rb-mountain-text').innerHTML = '';
-        // document.querySelector('#rb-road-text').innerHTML = '';
-        // mainHeader.classList.add('justify-between');
-        // mainHeader.classList.remove('justify-center', 'gap-3');
         document.querySelector('#app-title').classList.add('text-xl');
     } else {
         document.querySelector("main").prepend(filterBar);
@@ -191,13 +186,6 @@ async function mqAction(mediaQuery) {
             el.classList.remove('justify-between');
             el.classList.add('justify-center', 'gap-3');
         }
-        // for (const el of document.querySelectorAll('sl-radio-button>span')){
-        //     el.classList.remove('invisible');
-        // }
-        // document.querySelector('#rb-mountain-text').innerHTML = 'Mountain';
-        // document.querySelector('#rb-road-text').innerHTML = 'Road';
-        // mainHeader.classList.remove('justify-between');
-        // mainHeader.classList.add('justify-center', 'gap-3');
         document.querySelector('#app-title').classList.remove('text-xl');
 
         try {
@@ -268,12 +256,12 @@ mqSmall.addEventListener("change", function () {
                     label="Filters"
                     placement="start"
                     class="drawer-placement-start"
-                    style="--size: 90%;"
+                    style="--size: 90%;"   
                 >
                     <!-- <sl-button slot="footer" variant="primary">Close</sl-button> -->
                 </sl-drawer>
                 <div id="filter-bar" class="min-w-min side-bar">
-                    <sl-select class="w-72 my-3"
+                    <sl-select class="my-3"
                         id="sort"
                         value="model_name-ASC"
                         hx-post="/rpc/html_bike_cards"
@@ -298,7 +286,7 @@ mqSmall.addEventListener("change", function () {
                             <sl-icon slot="suffix" name="sort-alpha-up-alt"></sl-icon>
                         </sl-option>
                     </sl-select>
-                    <sl-button id="filter-reset" class="w-72" variant="primary" outline>Clear Filters
+                    <sl-button id="filter-reset" class="w-full" variant="primary" outline>Clear Filters
                         <sl-icon slot="prefix" src={filterOffImage.src} style="font-size: 1.2rem;"></sl-icon>
                         <!-- <sl-icon slot="suffix" name="arrow-counterclockwise" style="font-size: 1.2rem;"></sl-icon> -->
                     </sl-button>
@@ -391,7 +379,7 @@ mqSmall.addEventListener("change", function () {
         overflow: auto;
         padding: 0 0.75rem 0.75rem 0.75rem; 
     }
-    .side-bar-hidden { height: calc(100dvh - 4rem); overflow: auto; }
+    .side-bar-hidden { height: calc(100dvh - 8rem); overflow: auto; }
 
     sl-checkbox:not(:last-child) {
         margin-right: 0.75rem; /* mr-3  */
