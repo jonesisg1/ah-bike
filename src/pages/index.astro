@@ -3,6 +3,9 @@ import DualRangeSlider from "../components/DualRangeSlider.astro";
 import Layout from "../layouts/Layout.astro"
 import mountainImage from "../assets/mountain.svg"
 import roadImage from "../assets/road.svg"
+import arrowsImage from "../assets/arrows-sort.svg"
+import filterOffImage from "../assets/filter-off.svg"
+import listTreeImage from "../assets/list-tree.svg"
 const bikeApi = import.meta.env.PUBLIC_BIKE_API;
 const anonKey = import.meta.env.PUBLIC_ANON_KEY;
 ---
@@ -11,6 +14,9 @@ const anonKey = import.meta.env.PUBLIC_ANON_KEY;
 interface HTMXEvent extends Event {
   detail: any;
 }
+interface HTMXEventTarget extends EventTarget {
+  value: any;
+}
 interface Options {
     order?: string;
     priceFrom?: string;
@@ -18,6 +24,7 @@ interface Options {
     filters?: any;
     results?: number;
     bikeType?: string;
+    search?: string;
 }
 document.body.addEventListener(
     "htmx:afterSwap",
@@ -27,17 +34,10 @@ document.body.addEventListener(
             const EoF = document.getElementById("EoF")
             if ( EoF ) {
                 document.getElementById("next-button").classList.add('hidden');
-                // setAttribute("disabled", "");
-                // document.querySelectorAll("#next-button > sl-icon").forEach((e) => {
-                //     e.setAttribute('name', 'sign-stop')
-                // })
             } else {
                 document.getElementById("next-button").classList.remove('hidden');
-                // removeAttribute("disabled");
-                // document.querySelectorAll("#next-button > sl-icon").forEach((e) => {
-                //     e.setAttribute('name', 'download')
-                // })
             }
+            document.querySelector('body').dispatchEvent(new Event('cards-updated'));
         }
     });
 
@@ -61,14 +61,14 @@ document.body.addEventListener(
                 (document.getElementById("fromInput") as HTMLInputElement ).value = options.priceFrom;
                 (document.getElementById("toInput") as HTMLInputElement ).value = options.priceTo;
                 (document.getElementById("rg-bike-type") as HTMLInputElement ).value = options.bikeType;
+                (document.getElementById("search") as HTMLInputElement).value = options.search ?? '';
                 results = options.results;
                 // Update fill in range slider
                 document.querySelector('body').dispatchEvent(new Event('post-filter-reset'));
             }
         } else {
-
+            console.log(`event trigger: ${evt.detail.elt.id}, triggerType: ${triggerType}`);
             let filters = {};
-            results = document.querySelectorAll("#bike-cards > * sl-card").length;
             if (triggerType === 'post-filter-reset') {
                 results = 12;
                 options = {
@@ -77,6 +77,7 @@ document.body.addEventListener(
                     priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
                     priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value,
                     bikeType: (document.getElementById("rg-bike-type") as HTMLInputElement)?.value,
+                    search: (document.getElementById("search") as HTMLInputElement)?.value,
                     results: results
                 };
 
@@ -94,7 +95,7 @@ document.body.addEventListener(
                     if (triggerType === 'sl-change') {
                         results = 12;
                     } else if (evt.detail.elt.id === 'next-button') {
-                        results += 12;
+                        results = document.querySelectorAll("#bike-cards > * sl-card").length + 12;
                     }
                 }
 
@@ -104,6 +105,7 @@ document.body.addEventListener(
                     priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
                     priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value,
                     bikeType: (document.getElementById("rg-bike-type") as HTMLInputElement)?.value,
+                    search: (document.getElementById("search") as HTMLInputElement)?.value,
                     results: results
                 };
                 
@@ -145,34 +147,59 @@ document.querySelector('#filter-reset').addEventListener("click", resetFilters);
 
 document.querySelector('#rg-bike-type').addEventListener("sl-change", ()=>{
     // console.log('bike type changed');
+    (document.getElementById("search") as HTMLInputElement).value = '';
     resetFilters();
     document.querySelector('body').dispatchEvent(new Event('bike-type-changed'));
+});
+
+document.querySelector('#rg-grid-tree').addEventListener("sl-change", (el)=>{
+    if ((el.currentTarget as HTMXEventTarget).value === 'Tree' )  {
+        document.querySelector('#bike-cards-wrapper').classList.add('removed');
+        document.querySelector('#bike-tree').classList.remove('removed');
+    } else {
+        document.querySelector('#bike-cards-wrapper').classList.remove('removed');
+        document.querySelector('#bike-tree').classList.add('removed');
+    }
+    
 });
 
  // @ts-ignore
 openButton.addEventListener("click", () => drawer.show());
 
 async function mqAction(mediaQuery) {
-    const mainHeader = document.querySelector('.main-header');
+    // const mainHeader = document.querySelector('.main-header');
+    const search = document.querySelector('#search');
     if (mediaQuery.matches) {
         // If media query matches (bar hidden)
         drawer.append(filterBar);
-        openButton.classList.remove('invisible');
-        filterBar.classList.remove('h-dvh', 'side-bar-hidden');
-        document.querySelector('#rb-mountain-text').innerHTML = '';
-        document.querySelector('#rb-road-text').innerHTML = '';
-        mainHeader.classList.add('justify-between');
-        mainHeader.classList.remove('justify-center', 'gap-5');
-        document.querySelector('.main-header>h3').classList.add('text-2xl');
+        openButton.classList.remove('removed');
+        
+        for (const el of document.querySelectorAll('.page-header')){
+            el.classList.add('justify-between');
+            el.classList.remove('justify-center', 'gap-3');
+        }
+        // document.querySelector('#rb-mountain-text').innerHTML = '';
+        // document.querySelector('#rb-road-text').innerHTML = '';
+        // mainHeader.classList.add('justify-between');
+        // mainHeader.classList.remove('justify-center', 'gap-3');
+        document.querySelector('#app-title').classList.add('text-xl');
     } else {
         document.querySelector("main").prepend(filterBar);
         filterBar.classList.add('side-bar-hidden', 'h-dvh');
-        openButton.classList.add('invisible');
-        document.querySelector('#rb-mountain-text').innerHTML = 'Mountain';
-        document.querySelector('#rb-road-text').innerHTML = 'Road';
-        mainHeader.classList.remove('justify-between');
-        mainHeader.classList.add('justify-center', 'gap-5');
-        document.querySelector('.main-header>h3').classList.remove('text-2xl');
+        openButton.classList.add('removed');
+        for (const el of document.querySelectorAll('.page-header')){
+            el.classList.remove('justify-between');
+            el.classList.add('justify-center', 'gap-3');
+        }
+        // for (const el of document.querySelectorAll('sl-radio-button>span')){
+        //     el.classList.remove('invisible');
+        // }
+        // document.querySelector('#rb-mountain-text').innerHTML = 'Mountain';
+        // document.querySelector('#rb-road-text').innerHTML = 'Road';
+        // mainHeader.classList.remove('justify-between');
+        // mainHeader.classList.add('justify-center', 'gap-3');
+        document.querySelector('#app-title').classList.remove('text-xl');
+
         try {
             //  @ts-ignore
             drawer.hide();
@@ -190,25 +217,50 @@ mqSmall.addEventListener("change", function () {
 
 </script>
 <Layout title="Astro HTMX Bike">
-    <div class="page-container">
-        <div class="main-header container flex mx-auto mx-3">
+    <div class="page-container" hx-headers='{"Accept": "text/html"}'>
+        
+        <div class="main-header page-header container flex mx-auto">
+            <!-- The Filter button that becomes visible when the sidebar is moved to the drawer. -->
             <sl-icon-button name="sliders" id="open-button" style="font-size: 1.5rem;" class="ml-3 self-center"></sl-icon-button>
-            <h3 class="self-center">Astro &lt;<span class="text-[#3d72d7] font-bold">/</span>&gt; Bike</h3>
-            <sl-radio-group id="rg-bike-type" value="Mountain" class="mr-3 self-center">
+            <h3 id="app-title" class="self-center">
+                Astro &lt;<span class="text-[#3d72d7] font-bold">/</span>&gt; Bike
+            </h3>
+            <!-- bikes.bike_type selector. -->
+            <sl-radio-group id="rg-bike-type" value="Mountain" class="self-center mr-3">
                 <sl-radio-button id="rb-mountain" value="Mountain">
                     <sl-icon slot="prefix" src={mountainImage.src} style="font-size: 1.5rem;"></sl-icon>
-                    <span id="rb-mountain-text"></span>
+                    <span id="rb-mountain-text">Mountain</span>
                 </sl-radio-button>
                 <sl-radio-button id="rb-road" value="Road">
                     <sl-icon slot="prefix" src={roadImage.src} style="font-size: 1.5rem;"></sl-icon>
-                    <span id="rb-road-text"></span>
+                    <span id="rb-road-text">Road</span>
                 </sl-radio-button>                    
             </sl-radio-group>
+        </div>
+        
+        <div class="search-bar page-header mx-3 flex justify-center gap-3">
+            <sl-input placeholder="Model Search" id="search" type="search" size="small" class="self-center"clearable
+                hx-post="/rpc/html_bike_cards" 
+                hx-trigger="sl-clear, input changed delay:500ms, search" 
+                hx-target="#bike-cards" 
+            >
+                <sl-icon name="search" slot="prefix"></sl-icon>
+            </sl-input>
+            <!-- Switch view from grid to tree. -->
+            <sl-radio-group id="rg-grid-tree" value="Grid" class="self-center" size="small" >
+                <sl-radio-button id="rb-grid" value="Grid" >
+                    <sl-icon slot="prefix" name="grid-3x3-gap" style="font-size: 1.25rem;"></sl-icon>
+                    <span id="rb-grid-text">Grid</span>
+                </sl-radio-button>
+                <sl-radio-button id="rb-tree" value="Tree" >
+                    <sl-icon slot="prefix" src={listTreeImage.src} style="font-size: 1.5rem;"></sl-icon>
+                    <span id="rb-grid-text">Tree</span>
+                </sl-radio-button>                    
+            </sl-radio-group>  
         </div>
         <div class="main-content">
             <main 
                 class="container flex mx-auto mx-3"
-                hx-headers='{"Accept": "text/html"}'
                 data-bike-api={bikeApi}
                 data-anon-key={anonKey}
             >
@@ -220,29 +272,37 @@ mqSmall.addEventListener("change", function () {
                 >
                     <!-- <sl-button slot="footer" variant="primary">Close</sl-button> -->
                 </sl-drawer>
-                <!-- <div class="fixed left-3 top-16 z-10">
-                    <sl-icon-button name="sliders" id="open-button" style="font-size: 1.5rem;"></sl-icon-button>
-                </div> -->
                 <div id="filter-bar" class="min-w-min side-bar">
-                    <sl-select
+                    <sl-select class="w-72 my-3"
                         id="sort"
-                        label="Sort by"
                         value="model_name-ASC"
                         hx-post="/rpc/html_bike_cards"
                         hx-target="#bike-cards"
                         hx-trigger="sl-change"
                     >
-                        <sl-option value="book_price_from-ASC">Price: Low-High</sl-option>
-                        <sl-option value="book_price_from-DESC">Price: High-Low</sl-option>
-                        <sl-option value="model_name-ASC">Model name: Low-High</sl-option>
-                        <sl-option value="model_name-DESC">Model name: High-Low</sl-option>
+                        <sl-icon src={arrowsImage.src} slot="prefix" style="font-size: 1.25rem;"></sl-icon>
+                        <sl-option value="book_price_from-ASC">
+                            Price (Low - High)
+                            <sl-icon slot="suffix" name="sort-numeric-down"></sl-icon>
+                        </sl-option>
+                        <sl-option value="book_price_from-DESC">
+                            Price (High - Low)
+                            <sl-icon slot="suffix" name="sort-numeric-up-alt"></sl-icon>
+                        </sl-option>
+                        <sl-option value="model_name-ASC">
+                            Model name (A-Z)
+                            <sl-icon slot="suffix" name="sort-alpha-down"></sl-icon>
+                        </sl-option>
+                        <sl-option value="model_name-DESC">
+                            Model name (Z-A)
+                            <sl-icon slot="suffix" name="sort-alpha-up-alt"></sl-icon>
+                        </sl-option>
                     </sl-select>
-                    <sl-button id="filter-reset" class="w-full mt-3">Clear Filters
-                        <sl-icon slot="prefix" name="funnel"></sl-icon>
-                        <sl-icon slot="suffix" name="arrow-counterclockwise"></sl-icon>
+                    <sl-button id="filter-reset" class="w-72" variant="primary" outline>Clear Filters
+                        <sl-icon slot="prefix" src={filterOffImage.src} style="font-size: 1.2rem;"></sl-icon>
+                        <!-- <sl-icon slot="suffix" name="arrow-counterclockwise" style="font-size: 1.2rem;"></sl-icon> -->
                     </sl-button>
                     <DualRangeSlider minPrice={0}, maxPrice={15000}, step={10}></DualRangeSlider>
-                    <!-- <FilterDetails></FilterDetails> -->
                     <div id="bike-filters"
                         hx-post="/rpc/html_bike_filters"
                         hx-target="this"
@@ -250,24 +310,33 @@ mqSmall.addEventListener("change", function () {
                     >
                     </div>
                 </div>
-                <!-- <img src="trek/1120_21_33304_A_Primary.webp" loading="lazy"> -->
-                <div>
-                <div id="bike-cards" class="flex flex-wrap"
-                    hx-post="/rpc/html_bike_cards"
-                    hx-target="this"
-                    hx-trigger="load, post-filter-reset from:body"
-                >
-                </div>
-                <div class="p-3 w-full">
-                    <sl-button id="next-button" class="w-full"
+                <!--This is here so that the 'more' button is under the grid!-->
+                <div id="bike-cards-wrapper"> 
+                    <div id="bike-cards" class="flex flex-wrap"
                         hx-post="/rpc/html_bike_cards"
-                        hx-target="#bike-cards"
-                        hx-trigger="click"
-                    >Show more bikes
-                        <sl-icon slot="prefix" name="download"></sl-icon>
-                        <sl-icon slot="suffix" name="download"></sl-icon>			  
-                    </sl-button>
+                        hx-target="this"
+                        hx-trigger="load, post-filter-reset from:body"
+                    >
+                    </div>
+                    <div class="p-3 w-full">
+                        <sl-button id="next-button" class="w-full" variant="primary" outline
+                            hx-post="/rpc/html_bike_cards"
+                            hx-target="#bike-cards"
+                            hx-trigger="click"
+                        >
+                            <sl-icon slot="prefix" name="download" style="font-size: 1.2rem;"></sl-icon>
+                            <sl-icon slot="suffix" name="download" style="font-size: 1.2rem;"></sl-icon>			  
+                            Show more bikes
+                        </sl-button>
+                    </div>
                 </div>
+                <div>
+                <sl-tree id="bike-tree" class="removed"
+                    hx-post="/rpc/html_bike_tree"
+                    hx-target="this"
+                    hx-trigger="load, cards-updated from:body"
+                >
+                </sl-tree>                    
                 </div>
             </main>
         </div>
@@ -276,14 +345,22 @@ mqSmall.addEventListener("change", function () {
 
 <style is:global>
 
+    .removed {
+        display: none;
+    }
+
     .bike-card-wrapper {
         flex-grow: 1;
         margin: 0.3666rem;
         flex-basis: 20rem;
     }
     @media (max-width: 656px) {
-        #rg-bike-type>sl-radio-button::part(label) {
-            padding-right: 0;
+        sl-radio-button::part(label) {
+            /* padding-right: 0; */
+            display:none;
+        }
+        sl-radio-button::part(suffix) {
+            padding-right: 10px;
         }
         .bike-card-wrapper {
             max-width: 100%;
@@ -297,11 +374,13 @@ mqSmall.addEventListener("change", function () {
         grid-auto-flow: row;
         grid-template-areas:
             "main-header"
+            "search-bar"
             "main-content";
         height: 100dvh; overflow: auto;
     }
     .main-header { grid-area: main-header; }
-    .main-content { grid-area: main-content; height: calc(100dvh - 4rem); overflow: auto; }
+    .main-content { grid-area: main-content; height: calc(100dvh - 8rem); overflow: auto; }
+                                                          /* 4 + 4 */
 
     :not(:defined) {
         visibility: hidden;
