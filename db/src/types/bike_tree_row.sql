@@ -3,10 +3,11 @@
 -- DROP TYPE bikes.bike_tree_row;
 
 CREATE TYPE bikes.bike_tree_row AS (
-	cur_brand text,
-	cur_model_family text,
-	cur_model_yr text,
-	cur_row_number int8,
+	bike_id int8,
+	brand text,
+	model_family text,
+	model_yr text,
+	row_num int8,
 	prev_brand text,
 	prev_model_family text,
 	prev_model_yr text,
