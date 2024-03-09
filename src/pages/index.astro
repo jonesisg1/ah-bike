@@ -158,10 +158,6 @@ document.querySelector('#rg-bike-type').addEventListener("sl-change", ()=>{
     document.querySelector('body').dispatchEvent(new Event('bike-type-changed'));
 });
 
-document.querySelector('#rg-grid-tree').addEventListener("sl-change", (el)=>{
-    document.querySelector('body').dispatchEvent(new Event('post-filter-reset'));
-});
-
  // @ts-ignore
 openButton.addEventListener("click", () => drawer.show());
 
@@ -234,7 +230,11 @@ mqSmall.addEventListener("change", function () {
                 <sl-icon name="search" slot="prefix"></sl-icon>
             </sl-input>
             <!-- Switch view from grid to tree. -->
-            <sl-radio-group id="rg-grid-tree" value="Grid" class="self-center" size="small" >
+            <sl-radio-group id="rg-grid-tree" value="Grid" class="self-center" size="small" 
+                hx-post="/rpc/html_bike_cards"
+                hx-target="#bike-cards"
+                hx-trigger="sl-change"
+            >
                 <sl-radio-button id="rb-grid" value="Grid" >
                     <sl-icon slot="prefix" name="grid-3x3-gap" style="font-size: 1.25rem;"></sl-icon>
                     <span id="rb-grid-text">Grid</span>
