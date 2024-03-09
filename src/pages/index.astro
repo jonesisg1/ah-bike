@@ -24,12 +24,13 @@ interface Options {
     filters?: any;
     results?: number;
     bikeType?: string;
+    gridTree?: string;
     search?: string;
 }
 document.body.addEventListener(
     "htmx:afterSwap",
     function (evt: HTMXEvent) {
-        // console.log(`htmx:afterSwap - elt.id = ${evt.detail.elt.id}`)
+        console.log(`htmx:afterSwap - elt.id = ${evt.detail.elt.id} - view ${(document.getElementById("rg-grid-tree") as HTMLInputElement ).value}`)
         if (evt.detail.elt.id === 'bike-cards') {
             const EoF = document.getElementById("EoF")
             if ( EoF ) {
@@ -37,7 +38,9 @@ document.body.addEventListener(
             } else {
                 document.getElementById("next-button").classList.remove('hidden');
             }
-            document.querySelector('body').dispatchEvent(new Event('cards-updated'));
+        }
+        if ((document.getElementById("rg-grid-tree") as HTMLInputElement ).value === 'Tree') {
+            document.getElementById("next-button").classList.add('hidden');
         }
     });
 
@@ -61,6 +64,7 @@ document.body.addEventListener(
                 (document.getElementById("fromInput") as HTMLInputElement ).value = options.priceFrom;
                 (document.getElementById("toInput") as HTMLInputElement ).value = options.priceTo;
                 (document.getElementById("rg-bike-type") as HTMLInputElement ).value = options.bikeType;
+                (document.getElementById("rg-grid-tree") as HTMLInputElement ).value = options.gridTree;
                 (document.getElementById("search") as HTMLInputElement).value = options.search ?? '';
                 results = options.results;
                 // Update fill in range slider
@@ -77,6 +81,7 @@ document.body.addEventListener(
                     priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
                     priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value,
                     bikeType: (document.getElementById("rg-bike-type") as HTMLInputElement)?.value,
+                    gridTree: (document.getElementById("rg-grid-tree") as HTMLInputElement)?.value,
                     search: (document.getElementById("search") as HTMLInputElement)?.value,
                     results: results
                 };
@@ -105,6 +110,7 @@ document.body.addEventListener(
                     priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
                     priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value,
                     bikeType: (document.getElementById("rg-bike-type") as HTMLInputElement)?.value,
+                    gridTree: (document.getElementById("rg-grid-tree") as HTMLInputElement)?.value,
                     search: (document.getElementById("search") as HTMLInputElement)?.value,
                     results: results
                 };
@@ -153,14 +159,7 @@ document.querySelector('#rg-bike-type').addEventListener("sl-change", ()=>{
 });
 
 document.querySelector('#rg-grid-tree').addEventListener("sl-change", (el)=>{
-    if ((el.currentTarget as HTMXEventTarget).value === 'Tree' )  {
-        document.querySelector('#bike-cards-wrapper').classList.add('removed');
-        document.querySelector('#bike-tree').classList.remove('removed');
-    } else {
-        document.querySelector('#bike-cards-wrapper').classList.remove('removed');
-        document.querySelector('#bike-tree').classList.add('removed');
-    }
-    
+    document.querySelector('body').dispatchEvent(new Event('post-filter-reset'));
 });
 
  // @ts-ignore
@@ -317,14 +316,6 @@ mqSmall.addEventListener("change", function () {
                             Show more bikes
                         </sl-button>
                     </div>
-                </div>
-                <div>
-                <sl-tree id="bike-tree" class="removed"
-                    hx-post="/rpc/html_bike_tree"
-                    hx-target="this"
-                    hx-trigger="load, cards-updated from:body"
-                >
-                </sl-tree>                    
                 </div>
             </main>
         </div>
