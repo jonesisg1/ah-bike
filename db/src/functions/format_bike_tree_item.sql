@@ -30,6 +30,6 @@ AS $function$
 				else ''
 		      end) --as model_family
 	 ,format('<sl-tree-item><a href="/bike?id=%s">%s</a></sl-tree-item>',$1.bike_id,$1.model_yr) --as model_name
-	 ,format('%s',case when $1.row_number = $1.last_row then '</sl-tree-item></sl-tree-item>' else '' end));
+	 ,format('%s',case when $1.row_num = $1.last_row then '</sl-tree-item></sl-tree-item>' else '' end));
 $function$
 ;
