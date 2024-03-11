@@ -11,8 +11,12 @@ export async function GET({params, request}) {
     let cognitoUrl = '';
     let linkText = 'Staff Login';
     let icon = 'box-arrow-in-right';
-
+    headers.forEach((value, key) => {
+        console.info(`${key} ==> ${value}`);
+      });
     if (cookie) {
+        console.info(`cookie found - callback: ${callback}`)
+        console.log(cookie);
         if (cookie.split('=')) {
             if (cookie.split('=')[0] === 'access-token') {
 
@@ -24,7 +28,6 @@ export async function GET({params, request}) {
                 icon = 'box-arrow-left'
             }
         }
-        console.info(`cookie found - callback: ${callback}`)
     } else {
         cognitoUrl = getCognitoSignInUrl(import.meta.env, callback + '/signIn');
         console.info(`No cookie found - callback: ${callback}`)
