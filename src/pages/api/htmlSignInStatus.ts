@@ -12,7 +12,8 @@ export async function GET({params, request}) {
     let linkText = 'Staff Login';
     let icon = 'box-arrow-in-right';       
                
-    for (const [key, value] of headers.entries()) {        
+    for (const [key, value] of headers.entries()) {   
+        console.info(`${key} ==> ${value}`)     
         if (key == 'cookie') {
             if (value.split('=')) {
                 if (value.split('=')[0] === 'access-token') {
