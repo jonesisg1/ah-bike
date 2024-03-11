@@ -48,7 +48,13 @@ document.body.addEventListener(
     "htmx:configRequest",
     function (evt: HTMXEvent) {
         
-        // console.log(evt.detail.elt.id);
+        console.log(evt.detail.elt.id);
+
+        if (evt.detail.elt.id === 'sign-in-status') {
+            evt.detail.parameters["callback"] = `${window.location.protocol}//${window.location.host}`;
+        }
+        
+        else {
 
         const triggerType = evt.detail.triggeringEvent?.type ?? 'load'
         let options: Options = {};
@@ -134,6 +140,7 @@ document.body.addEventListener(
             evt.detail.headers['apikey'] = main.dataset.anonKey;
             evt.detail.headers['Authorization'] = 'Bearer ' + main.dataset.anonKey;
         }
+    }
     },
 );
 const drawer = document.querySelector(".drawer-placement-start");
@@ -319,6 +326,14 @@ mqSmall.addEventListener("change", function () {
                 </div>
             </main>
         </div>
+        <div class="footer container mx-auto mx-3 flex justify-around items-center text-sm font-light">
+            <p class="">Ian Jones 2024</p>
+            <span id="sign-in-status"
+                hx-get="api/htmlSignInStatus"
+                hx-target="this"
+                hx-trigger="load"
+            ></span>
+        </div>
     </div>
 </Layout>
 
@@ -348,18 +363,19 @@ mqSmall.addEventListener("change", function () {
     }
     .page-container {  display: grid;
         grid-template-columns: 1fr;
-        grid-template-rows: 4rem;
+        grid-template-rows: 4rem 4rem 1fr 3rem;
         gap: 0px 0px;
         grid-auto-flow: row;
         grid-template-areas:
             "main-header"
             "search-bar"
-            "main-content";
+            "main-content"
+            "footer";
         height: 100dvh; overflow: auto;
     }
     .main-header { grid-area: main-header; }
-    .main-content { grid-area: main-content; height: calc(100dvh - 8rem); overflow: auto; }
-                                                          /* 4 + 4 */
+    .main-content { grid-area: main-content; height: calc(100dvh - 11rem); overflow: auto; }
+                                                          /* 4 + 4 + 2*/
 
     :not(:defined) {
         visibility: hidden;
@@ -370,7 +386,7 @@ mqSmall.addEventListener("change", function () {
         overflow: auto;
         padding: 0 0.75rem 0.75rem 0.75rem; 
     }
-    .side-bar-hidden { height: calc(100dvh - 8rem); overflow: auto; }
+    .side-bar-hidden { height: calc(100dvh - 11rem); overflow: auto; }
 
     sl-checkbox:not(:last-child) {
         margin-right: 0.75rem; /* mr-3  */

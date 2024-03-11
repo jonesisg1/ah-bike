@@ -1,0 +1,12 @@
+---
+import Layout from "../layouts/Layout.astro"
+---
+<script>
+    const response = await fetch('api/signOut');
+    const out = await response.json()
+    console.log(out)
+    window.history.go(-2)
+</script>
+<Layout title="Astro HTMX Bike">
+    <h1>Logging out...</h1>
+</Layout>

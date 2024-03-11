@@ -1,0 +1,22 @@
+---
+import Layout from "../layouts/Layout.astro"
+---
+<script>
+    import { getIdTokenFromHash } from "../modules/cognito";
+
+    const idToken = getIdTokenFromHash(window.location.hash);
+    const setAuthUrl = `api/setAuth?id_token=${idToken}`; // Astro wont' send hash to server to convert to querystring.
+    console.log(setAuthUrl);
+    const response = await fetch(setAuthUrl);
+      const creds = await response.json()
+      console.log(creds.email)
+    let user = document.getElementById("user");
+    if (user) {
+      console.log(user?.innerHTML)
+      user.innerHTML = `Hello ${creds.email}`;
+      window.history.go(-2)
+    }
+</script>
+<Layout title="Astro HTMX Bike">
+    <h1>Authorising with AWS Cognito. <span id="user"></span></h1>
+</Layout>
