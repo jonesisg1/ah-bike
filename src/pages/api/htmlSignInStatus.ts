@@ -15,9 +15,10 @@ export async function GET({params, request}) {
     for (const [key, value] of headers.entries()) {   
         console.info(`${key} ==> ${value}`)     
         if (key == 'cookie') {
-            if (value.split('=')) {
-                if (value.split('=')[0] === 'access-token') {
-                    const awsIdToken = value.split('=')[1];
+            // we might have multiple access tokens
+            for (const cookie of value.split(';')) {
+                if (cookie.split('=')[0] === 'access-token') {
+                    const awsIdToken = cookie.split('=')[1];
                     const creds = await decodeIdToken(import.meta.env, awsIdToken);
                     cognitoUrl = getCognitoSignOutUrl(import.meta.env, callback) + '/signOut';
                     linkText = `Sign Out ${creds.email}`;
