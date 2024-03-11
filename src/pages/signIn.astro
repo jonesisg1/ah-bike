@@ -14,7 +14,7 @@ import Layout from "../layouts/Layout.astro"
     if (user) {
       console.log(user?.innerHTML)
       user.innerHTML = `Hello ${creds.email}`;
-      window.history.go(-2)
+      window.location.assign('/');
     }
 </script>
 <Layout title="Astro HTMX Bike">

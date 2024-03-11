@@ -11,15 +11,6 @@ const anonKey = import.meta.env.PUBLIC_ANON_KEY;
 ---
 <script>
 
-var perfEntries = performance.getEntriesByType("navigation");
-for (var i = 0; i < perfEntries.length; i++) {
-    //@ts-ignore
-    if (perfEntries[i].type === 'back_forward') {
-        console.log('trigger history event')
-        document.querySelector('body').dispatchEvent(new Event('history-event'));
-    }
-}
-
 interface HTMXEvent extends Event {
   detail: any;
 }
@@ -340,7 +331,7 @@ mqSmall.addEventListener("change", function () {
             <span id="sign-in-status"
                 hx-get="api/htmlSignInStatus"
                 hx-target="this"
-                hx-trigger="load, history-event from:body"
+                hx-trigger="load"
             ></span>
         </div>
     </div>
