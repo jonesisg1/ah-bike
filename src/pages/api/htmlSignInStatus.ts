@@ -4,39 +4,29 @@ import { getCognitoSignInUrl, getCognitoSignOutUrl, decodeIdToken } from "../../
 
 export async function GET({params, request}) {
     const headers = new Headers(request.headers)
-    const cookie = headers.get('cookie');
     const url = new URL(request.url);
     const params1 = new URLSearchParams(url.search);
     const callback = params1.get('callback');
-    let cognitoUrl = '';
+    // defaults, override if we find cookie
+    let cognitoUrl = getCognitoSignInUrl(import.meta.env, callback + '/signIn');
     let linkText = 'Staff Login';
-    let icon = 'box-arrow-in-right';
-    headers.forEach((value, key) => {
-        console.info(`${key} ==> ${value}`);
-      });
-    if (cookie) {
-        console.info(`cookie found - callback: ${callback}`)
-        console.log(cookie);
-        if (cookie.split('=')) {
-            if (cookie.split('=')[0] === 'access-token') {
-
-                const awsIdToken = cookie.split('=')[1];
-                const creds = await decodeIdToken(import.meta.env, awsIdToken);
-
-                cognitoUrl = getCognitoSignOutUrl(import.meta.env, callback) + '/signOut';
-                linkText = `Sign Out ${creds.email}`;
-                icon = 'box-arrow-left'
+    let icon = 'box-arrow-in-right';       
+               
+    for (const [key, value] of headers.entries()) {        
+        if (key == 'cookie') {
+            if (value.split('=')) {
+                if (value.split('=')[0] === 'access-token') {
+                    const awsIdToken = value.split('=')[1];
+                    const creds = await decodeIdToken(import.meta.env, awsIdToken);
+                    cognitoUrl = getCognitoSignOutUrl(import.meta.env, callback) + '/signOut';
+                    linkText = `Sign Out ${creds.email}`;
+                    icon = 'box-arrow-left';
+                }
             }
-        }
-    } else {
-        cognitoUrl = getCognitoSignInUrl(import.meta.env, callback + '/signIn');
-        console.info(`No cookie found - callback: ${callback}`)
+        }   
     }
-
     const html = `<sl-icon name="${icon}" style="margin-bottom: -2px;"></sl-icon>
                   <a id="login" class="no-underline hover:underline" href="${cognitoUrl}">${linkText}</a>`;
 
-    return new Response(
-        html
-    )
+    return new Response(html);
 }
