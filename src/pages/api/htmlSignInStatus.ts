@@ -24,8 +24,10 @@ export async function GET({params, request}) {
                 icon = 'box-arrow-left'
             }
         }
+        console.info(`cookie found - callback: ${callback}`)
     } else {
         cognitoUrl = getCognitoSignInUrl(import.meta.env, callback + '/signIn');
+        console.info(`No cookie found - callback: ${callback}`)
     }
 
     const html = `<sl-icon name="${icon}" style="margin-bottom: -2px;"></sl-icon>
