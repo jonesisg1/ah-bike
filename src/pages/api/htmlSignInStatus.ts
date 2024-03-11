@@ -9,19 +9,19 @@ export async function GET({params, request}) {
     const callback = params1.get('callback');
     // defaults, override if we find cookie
     let cognitoUrl = getCognitoSignInUrl(import.meta.env, callback + '/signIn');
-    let linkText = 'Staff Login';
+    let linkText = 'Sign in';
     let icon = 'box-arrow-in-right';       
                
     for (const [key, value] of headers.entries()) {   
-        console.info(`${key} ==> ${value}`)     
-        if (key == 'cookie') {
+        // console.info(`${key} ==> ${value}`)   
+        if (key === 'cookie') {
             // we might have multiple access tokens
             for (const cookie of value.split(';')) {
                 if (cookie.split('=')[0] === 'access-token') {
                     const awsIdToken = cookie.split('=')[1];
                     const creds = await decodeIdToken(import.meta.env, awsIdToken);
                     cognitoUrl = getCognitoSignOutUrl(import.meta.env, callback) + '/signOut';
-                    linkText = `Sign Out ${creds.email}`;
+                    linkText = `Sign out ${creds.email}`;
                     icon = 'box-arrow-left';
                 }
             }
