@@ -305,13 +305,15 @@ mqSmall.addEventListener("change", function () {
                     </div>
                 </div>
                 <!--This is here so that the 'more' button is under the grid!-->
-                <div id="bike-cards-wrapper"> 
+                <div id="bike-cards-wrapper">
+                    <sl-spinner id="indicator" class="htmx-indicator" style="font-size: 4rem; --track-width: 4px;"></sl-spinner>
                     <div id="bike-cards" class="flex flex-wrap"
                         hx-post="/rpc/html_bike_cards"
                         hx-target="this"
                         hx-trigger="load, post-filter-reset from:body"
+                        hx-indicator="#indicator"
                     >
-                    </div>
+                    </div>                    
                     <div class="p-3 w-full">
                         <sl-button id="next-button" class="w-full" variant="primary" outline
                             hx-post="/rpc/html_bike_cards"

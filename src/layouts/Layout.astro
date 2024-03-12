@@ -39,6 +39,17 @@ const { title } = Astro.props;
         border-width: 2px;
         
     }
+
+	.htmx-indicator{
+    	display:none;
+	}
+	.htmx-request .htmx-indicator{
+		display:inline;
+	}
+	.htmx-request.htmx-indicator{
+		display:inline;
+	}
+
 	:not(:defined) {
         visibility: hidden;
     }

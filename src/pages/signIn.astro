@@ -8,15 +8,16 @@ import Layout from "../layouts/Layout.astro"
     const setAuthUrl = `api/setAuth?id_token=${idToken}`; // Astro wont' send hash to server to convert to querystring.
     console.log(setAuthUrl);
     const response = await fetch(setAuthUrl);
-      const creds = await response.json()
-      console.log(creds.email)
-    let user = document.getElementById("user");
-    if (user) {
-      console.log(user?.innerHTML)
-      user.innerHTML = `Hello ${creds.email}`;
-      window.location.assign('/');
+    let message = document.getElementById("message");
+    if (!message) {throw new Error('Bad html')}
+    if (response.status >= 200 && response.status < 300) {
+        const creds = await response.json()
+        message.innerHTML = `Hello ${creds.email}!`;
+        window.location.assign('/');
+    } else {
+        message.innerHTML = 'Authorisation Failed!';
     }
 </script>
 <Layout title="Astro HTMX Bike">
-    <h1>Authorising with AWS Cognito. <span id="user"></span></h1>
+    <h1 class="m-3">Authorising with AWS Cognito... <span id="message"></span></h1>
 </Layout>

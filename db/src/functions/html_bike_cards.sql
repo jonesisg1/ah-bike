@@ -42,7 +42,8 @@ begin
 --		raise notice 'SQL: %', v_query;
 		execute v_query into v_return;	 
  	else
-		v_return = coalesce('<sl-tree>'||nullif(bikes.html_bike_tree(_options),'')||'</sl-tree>',
+		v_return = coalesce('<sl-tree id="bike-tree"><sl-icon name="plus-square" slot="expand-icon"></sl-icon><sl-icon name="dash-square" slot="collapse-icon"></sl-icon>'
+							||nullif(bikes.html_bike_tree(_options),'')||'</sl-tree>',
 							'<div class="mx-3 mt-3"><p>No matching bikes found</p></div>');
 	end if;
   return v_return;
