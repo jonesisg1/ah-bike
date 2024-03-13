@@ -45,6 +45,15 @@ document.body.addEventListener(
     });
 
 document.body.addEventListener(
+    "htmx:responseError",
+    function (evt: HTMXEvent) {
+        console.log(`htmx:responseError - elt.id = ${evt.detail.elt.id}`)
+        if (evt.detail.elt.id === 'sign-in-status') {
+            window.location.assign('/signOut');
+        }
+    });
+
+document.body.addEventListener(
     "htmx:configRequest",
     function (evt: HTMXEvent) {
         
@@ -52,95 +61,101 @@ document.body.addEventListener(
 
         if (evt.detail.elt.id === 'sign-in-status') {
             evt.detail.parameters["callback"] = `${window.location.protocol}//${window.location.host}`;
-        }
-        
-        else {
-
-        const triggerType = evt.detail.triggeringEvent?.type ?? 'load'
-        let options: Options = {};
-        let results = 12;
-      
-        if (triggerType === 'load') { 
-            // console.log('Setup from URLSearch');
-            const params = new URLSearchParams(window.location.search);
-            const opts = params.get("opts");
-            if (opts !== null) {
-                options = JSON.parse(opts);
-                (document.getElementById("sort") as HTMLInputElement).value = options.order;
-                (document.getElementById("fromInput") as HTMLInputElement ).value = options.priceFrom;
-                (document.getElementById("toInput") as HTMLInputElement ).value = options.priceTo;
-                (document.getElementById("rg-bike-type") as HTMLInputElement ).value = options.bikeType;
-                (document.getElementById("rg-grid-tree") as HTMLInputElement ).value = options.gridTree;
-                (document.getElementById("search") as HTMLInputElement).value = options.search ?? '';
-                results = options.results;
-                // Update fill in range slider
-                document.querySelector('body').dispatchEvent(new Event('post-filter-reset'));
-            }
         } else {
-            // console.log(`event trigger: ${evt.detail.elt.id}, triggerType: ${triggerType}`);
-            let filters = {};
-            if (triggerType === 'post-filter-reset') {
-                results = 12;
-                options = {
-                    order: (document.getElementById("sort") as HTMLInputElement)?.value,
-                    filters: {},
-                    priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
-                    priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value,
-                    bikeType: (document.getElementById("rg-bike-type") as HTMLInputElement)?.value,
-                    gridTree: (document.getElementById("rg-grid-tree") as HTMLInputElement)?.value,
-                    search: (document.getElementById("search") as HTMLInputElement)?.value,
-                    results: results
-                };
 
-            } else
-             {
-                // Can't use .querySelectorAll("sl-checkbox[checked]")  // see issue #1855 (won't fix :(
-                document.querySelectorAll("sl-checkbox").forEach((el:HTMLInputElement)=>{
-                    if (el.checked) {
-                        filters[el.attributes['data-filter-type'].nodeValue] ??= [];
-                        filters[el.attributes['data-filter-type'].nodeValue].push(el.value);
-                    }
-                });
+            const triggerType = evt.detail.triggeringEvent?.type ?? 'load'
+            let options: Options = {};
+            let results = 12;
+        
+            if (triggerType === 'load') { 
+                // console.log('Setup from URLSearch');
+                const params = new URLSearchParams(window.location.search);
+                const opts = params.get("opts");
+                if (opts !== null) {
+                    options = JSON.parse(opts);
+                    (document.getElementById("sort") as HTMLInputElement).value = options.order;
+                    (document.getElementById("fromInput") as HTMLInputElement ).value = options.priceFrom;
+                    (document.getElementById("toInput") as HTMLInputElement ).value = options.priceTo;
+                    (document.getElementById("rg-bike-type") as HTMLInputElement ).value = options.bikeType;
+                    (document.getElementById("rg-grid-tree") as HTMLInputElement ).value = options.gridTree;
+                    (document.getElementById("search") as HTMLInputElement).value = options.search ?? '';
+                    results = options.results;
+                    // Update fill in range slider
+                    document.querySelector('body').dispatchEvent(new Event('post-filter-reset'));
+                }
+            } else {
+                // console.log(`event trigger: ${evt.detail.elt.id}, triggerType: ${triggerType}`);
+                let filters = {};
+                if (triggerType === 'post-filter-reset') {
+                    results = 12;
+                    options = {
+                        order: (document.getElementById("sort") as HTMLInputElement)?.value,
+                        filters: {},
+                        priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
+                        priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value,
+                        bikeType: (document.getElementById("rg-bike-type") as HTMLInputElement)?.value,
+                        gridTree: (document.getElementById("rg-grid-tree") as HTMLInputElement)?.value,
+                        search: (document.getElementById("search") as HTMLInputElement)?.value,
+                        results: results
+                    };
 
-                if (evt.detail?.headers['HX-Target'] === 'bike-cards') {
-                    if (triggerType === 'sl-change') {
-                        results = 12;
-                    } else if (evt.detail.elt.id === 'next-button') {
-                        results = document.querySelectorAll("#bike-cards > * sl-card").length + 12;
+                } else
+                {
+                    // Can't use .querySelectorAll("sl-checkbox[checked]")  // see issue #1855 (won't fix :(
+                    document.querySelectorAll("sl-checkbox").forEach((el:HTMLInputElement)=>{
+                        if (el.checked) {
+                            filters[el.attributes['data-filter-type'].nodeValue] ??= [];
+                            filters[el.attributes['data-filter-type'].nodeValue].push(el.value);
+                        }
+                    });
+
+                    if (evt.detail?.headers['HX-Target'] === 'bike-cards') {
+                        if (triggerType === 'sl-change') {
+                            results = 12;
+                        } else if (evt.detail.elt.id === 'next-button') {
+                            results = document.querySelectorAll("#bike-cards > * sl-card").length + 12;
+                        }
                     }
+
+                    options = {
+                        order: (document.getElementById("sort") as HTMLInputElement)?.value,
+                        filters: filters,
+                        priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
+                        priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value,
+                        bikeType: (document.getElementById("rg-bike-type") as HTMLInputElement)?.value,
+                        gridTree: (document.getElementById("rg-grid-tree") as HTMLInputElement)?.value,
+                        search: (document.getElementById("search") as HTMLInputElement)?.value,
+                        results: results
+                    };
+                    
                 }
 
-                options = {
-                    order: (document.getElementById("sort") as HTMLInputElement)?.value,
-                    filters: filters,
-                    priceFrom: (document.getElementById("fromInput") as HTMLInputElement )?.value,
-                    priceTo: (document.getElementById("toInput") as HTMLInputElement)?.value,
-                    bikeType: (document.getElementById("rg-bike-type") as HTMLInputElement)?.value,
-                    gridTree: (document.getElementById("rg-grid-tree") as HTMLInputElement)?.value,
-                    search: (document.getElementById("search") as HTMLInputElement)?.value,
-                    results: results
-                };
-                
+                const refresh = encodeURI(window.location.protocol + "//" + window.location.host + window.location.pathname + `?opts=${JSON.stringify(options)}`);    
+                window.history.pushState({ path: refresh }, '', refresh);
+            }
+            // console.log(`trigger: ${triggerType}, results: ${results}`)
+
+            if (evt.detail.elt.id === 'test') {
+                evt.detail.parameters["_arg"] = 'test from js';
+            } else {
+                evt.detail.parameters["_options"] = options;
             }
 
-            const refresh = encodeURI(window.location.protocol + "//" + window.location.host + window.location.pathname + `?opts=${JSON.stringify(options)}`);    
-            window.history.pushState({ path: refresh }, '', refresh);
-        }
-        // console.log(`trigger: ${triggerType}, results: ${results}`)
-        evt.detail.parameters["_options"] = options;
-        if (evt.detail?.headers['HX-Target'] === 'bike-cards') {
-            evt.detail.parameters["_row_limit"] = results;
-        }
+            if (evt.detail?.headers['HX-Target'] === 'bike-cards') {
+                evt.detail.parameters["_row_limit"] = results;
+            }
 
-        const main = document.querySelector("main");
-        evt.detail.path = main.dataset.bikeApi + evt.detail.path;
+            if (evt.detail.path.includes('/rpc/')) {
+                const main = document.querySelector("main");
+                evt.detail.path = main.dataset.bikeApi + evt.detail.path; 
 
-        if (main.dataset.bikeApi.includes('supabase')) {
-            evt.detail.headers['Content-Profile'] = 'bikes_api';
-            evt.detail.headers['apikey'] = main.dataset.anonKey;
-            evt.detail.headers['Authorization'] = 'Bearer ' + main.dataset.anonKey;
+                if (main.dataset.bikeApi.includes('supabase')) {
+                    evt.detail.headers['Content-Profile'] = 'bikes_api';
+                    evt.detail.headers['apikey'] = main.dataset.anonKey;
+                    evt.detail.headers['Authorization'] = 'Bearer ' + main.dataset.anonKey;
+                }
+            }
         }
-    }
     },
 );
 const drawer = document.querySelector(".drawer-placement-start");
@@ -230,7 +245,7 @@ mqSmall.addEventListener("change", function () {
         
         <div class="search-bar page-header mx-3 flex justify-center gap-3">
             <sl-input placeholder="Model Search" id="search" type="search" size="small" class="self-center"clearable
-                hx-post="/rpc/html_bike_cards" 
+                hx-post="/api/proxy/html_bike_cards" 
                 hx-trigger="sl-clear, input changed delay:500ms, search" 
                 hx-target="#bike-cards" 
             >
@@ -238,7 +253,7 @@ mqSmall.addEventListener("change", function () {
             </sl-input>
             <!-- Switch view from grid to tree. -->
             <sl-radio-group id="rg-grid-tree" value="Grid" class="self-center" size="small" 
-                hx-post="/rpc/html_bike_cards"
+                hx-post="/api/proxy/html_bike_cards" 
                 hx-target="#bike-cards"
                 hx-trigger="sl-change"
             >
@@ -258,6 +273,12 @@ mqSmall.addEventListener("change", function () {
                 data-bike-api={bikeApi}
                 data-anon-key={anonKey}
             >
+                <!-- <div id="test"
+                    hx-post="/api/proxy/test_proc"
+                    hx-target="this"
+                    hx-trigger="load">
+
+                </div> -->
                 <sl-drawer
                     label="Filters"
                     placement="start"
@@ -270,7 +291,7 @@ mqSmall.addEventListener("change", function () {
                     <sl-select class="my-3"
                         id="sort"
                         value="model_name-ASC"
-                        hx-post="/rpc/html_bike_cards"
+                        hx-post="/api/proxy/html_bike_cards"
                         hx-target="#bike-cards"
                         hx-trigger="sl-change"
                     >
@@ -308,7 +329,7 @@ mqSmall.addEventListener("change", function () {
                 <div id="bike-cards-wrapper">
                     <sl-spinner id="indicator" class="htmx-indicator" style="font-size: 4rem; --track-width: 4px;"></sl-spinner>
                     <div id="bike-cards" class="flex flex-wrap"
-                        hx-post="/rpc/html_bike_cards"
+                        hx-post="/api/proxy/html_bike_cards"
                         hx-target="this"
                         hx-trigger="load, post-filter-reset from:body"
                         hx-indicator="#indicator"
@@ -316,7 +337,7 @@ mqSmall.addEventListener("change", function () {
                     </div>                    
                     <div class="p-3 w-full">
                         <sl-button id="next-button" class="w-full" variant="primary" outline
-                            hx-post="/rpc/html_bike_cards"
+                            hx-post="/api/proxy/html_bike_cards"
                             hx-target="#bike-cards"
                             hx-trigger="click"
                         >

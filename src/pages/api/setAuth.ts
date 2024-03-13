@@ -7,11 +7,13 @@ export async function GET({params, request}) {
     const awsIdToken = params1.get('id_token');
     try {
         const creds = await decodeIdToken(import.meta.env, awsIdToken);
+        let headers = new Headers()
+        headers.append('Set-Cookie', `access-token=${awsIdToken}; HttpOnly`);
+        // headers.append('Set-Cookie', 'ah-sign-in=untrusted;'); Can't get to work :(
+        console.log(headers)
         return new Response(
             JSON.stringify(creds),
-            {status: 200, headers:{
-                "Set-Cookie": `access-token=${awsIdToken}; HttpOnly` 
-            }}
+            {status: 200, headers: headers}
         );
     } catch (e) {
         console.error(e);
