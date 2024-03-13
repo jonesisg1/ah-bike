@@ -10,7 +10,7 @@ select format('
 		id="%1$s-%4$s"
 		data-filter-type="%1$s" 
 		value="%2$s"
-		hx-post="/rpc/html_bike_cards"
+		hx-post="/api/proxy/html_bike_cards"
 		hx-target="#bike-cards"
 		hx-trigger="sl-change"
 		%3$s

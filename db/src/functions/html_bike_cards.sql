@@ -1,7 +1,7 @@
--- DROP FUNCTION bikes.html_bike_cards(int4, text);
+-- DROP FUNCTION bikes_api.html_bike_cards(int4, text);
 
-CREATE OR REPLACE FUNCTION bikes.html_bike_cards(_row_limit integer DEFAULT 0, _options text DEFAULT '{"order":"model_name ASC","filters":{},"priceFrom":"100", "priceTo":"1500"}'::text)
- RETURNS "text/html"
+CREATE OR REPLACE FUNCTION bikes_api.html_bike_cards(_row_limit integer DEFAULT 0, _options text DEFAULT '{"order":"model_name ASC","filters":{},"priceFrom":"100", "priceTo":"1500"}'::text)
+ RETURNS bikes_api."text/html"
  LANGUAGE plpgsql
 AS $function$
 declare
@@ -43,7 +43,7 @@ begin
 		execute v_query into v_return;	 
  	else
 		v_return = coalesce('<sl-tree id="bike-tree"><sl-icon name="plus-square" slot="expand-icon"></sl-icon><sl-icon name="dash-square" slot="collapse-icon"></sl-icon>'
-							||nullif(bikes.html_bike_tree(_options),'')||'</sl-tree>',
+							||nullif(bikes_api.html_bike_tree(_options),'')||'</sl-tree>',
 							'<div class="mx-3 mt-3"><p>No matching bikes found</p></div>');
 	end if;
   return v_return;

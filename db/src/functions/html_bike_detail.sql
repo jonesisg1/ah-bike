@@ -1,7 +1,7 @@
--- DROP FUNCTION bikes.html_bike_detail(int4);
+-- DROP FUNCTION bikes_api.html_bike_detail(int4);
 
-CREATE OR REPLACE FUNCTION bikes.html_bike_detail(_bike_id integer)
- RETURNS "text/html"
+CREATE OR REPLACE FUNCTION bikes_api.html_bike_detail(_bike_id integer)
+ RETURNS bikes_api."text/html"
  LANGUAGE sql
 AS $function$
 	select format(

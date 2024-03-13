@@ -1,7 +1,7 @@
--- DROP FUNCTION bikes.html_bike_filters(text);
+-- DROP FUNCTION bikes_api.html_bike_filters(text);
 
-CREATE OR REPLACE FUNCTION bikes.html_bike_filters(_options text DEFAULT '{}'::text)
- RETURNS "text/html"
+CREATE OR REPLACE FUNCTION bikes_api.html_bike_filters(_options text DEFAULT '{}'::text)
+ RETURNS bikes_api."text/html"
  LANGUAGE sql
  STABLE
 AS $function$

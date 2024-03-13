@@ -7,19 +7,20 @@ CREATE OR REPLACE FUNCTION bikes.html_bike_card(_bike bikes.bike_view)
 AS $function$
 select format(/*html*/'
 	<div class="bike-card-wrapper">
-		<sl-card class="zoom">
+		<sl-card class="zoom">	
 			<a href="/bike?id=%9$s">
 			<img loading="lazy" src="%11$s/%8$s" alt="Image of %1$s" />
 			<h4 class="pb-3">%2$s %1$s <small>(%10$s)</small></h4></a>
 			%12$s<br>
-			<div class="flex justify-center">
+			<div class="bike-card-badge-wrapper flex justify-center items-center">
 				<sl-badge id="price-badge" variant="neutral" pill><sl-format-number type="currency" currency="GBP" value="%7$s" lang="en-GB"></sl-format-number></sl-badge>
+				%13$s
 			</div>
 		</sl-card>
 	</div>
 	<style>
-    #price-badge::part(base) {
-        margin-top: 0.5rem;
+    .bike-card-badge-wrapper>sl-badge::part(base) {
+        margin: 0.25rem;
         font-size: inherit;
     }
 	</style>',
@@ -32,7 +33,14 @@ select format(/*html*/'
   format('%1$s%2$s%3$s %4$s %5$s Bike.',
       coalesce($1.wheel_sizes ||' wheel ', ''),
 	  coalesce($1.fork_travel || coalesce('/'|| nullif($1.rear_travel,'0'),'') || 'mm travel ', ''),
-	  $1.frame_material, $1.category, $1.bike_type)
+	  $1.frame_material, $1.category, $1.bike_type),
+  case when current_setting('request.jwt.claims', true)::json->>'role' = 'bike_user' 
+  	then '<sl-button variant="primary" size="small" outline>
+			  <sl-icon slot="prefix" name="gear"></sl-icon>
+			  Settings
+			</sl-button>'
+  	else ''
+  end
   );
 $function$
 ;

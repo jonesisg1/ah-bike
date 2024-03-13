@@ -1,7 +1,7 @@
--- DROP FUNCTION bikes.html_bike_tree(text);
+-- DROP FUNCTION bikes_api.html_bike_tree(text);
 
-CREATE OR REPLACE FUNCTION bikes.html_bike_tree(_options text DEFAULT '{"order":"model_name ASC","filters":{},"priceFrom":"100", "priceTo":"1500"}'::text)
- RETURNS "text/html"
+CREATE OR REPLACE FUNCTION bikes_api.html_bike_tree(_options text DEFAULT '{"order":"model_name ASC","filters":{},"priceFrom":"100", "priceTo":"1500"}'::text)
+ RETURNS bikes_api."text/html"
  LANGUAGE plpgsql
 AS $function$
 declare
@@ -14,7 +14,7 @@ begin
 	from (select q.* from ((
 		select 
 	 		bike_id, brand, model_family, model_name||' ('||model_year||')' as model_yr, 
-	 		row_number() over(order by brand, model_family, model_name||' ('||model_year||')') as row_number
+	 		row_number() over(order by brand, model_family, model_name||' ('||model_year||')') as row_num
 	 	 from bikes.bike_view 
 	 	where %1$s
 		  and book_price_from between %2$s and %3$s
@@ -30,14 +30,14 @@ begin
 		  and book_price_from between %2$s and %3$s
 		  and bike_type = '%4$s'
 		  and ((lower(model_name) like '%5$s') or ('%5$s' = ''))
-	    order by 1,2,3) prev on prev_row_number = row_number -1
+	    order by 1,2,3) prev on prev_row_number = row_num -1
 	join (
 		select count(1) as last_row from bikes.bike_view 
 		 where %1$s
 		  and book_price_from between %2$s and %3$s
 		  and bike_type = '%4$s'
 		  and ((lower(model_name) like '%5$s') or ('%5$s' = ''))) c on true
-	) q order by q.row_number ) q2
+	) q order by q.row_num ) q2
 $sql$,
 	bikes.build_where_sql(_options::json->'filters'),
 	coalesce((_options::json->>'priceFrom'), '0')::numeric * 100,
