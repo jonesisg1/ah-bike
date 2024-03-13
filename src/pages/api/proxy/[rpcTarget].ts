@@ -32,11 +32,14 @@ export async function POST(request) {
     if (bikeApi.includes('supabase')) {
         dbHeaders.append('Content-Profile','bikes_api');
         dbHeaders.append('apikey', import.meta.env.PUBLIC_ANON_KEY);
-        dbHeaders.append('Authorization','Bearer ' + import.meta.env.SERVER_DB_JWT);
-    } else    
-    if (userIdData?.email) {
-        dbHeaders.append('Authorization',`Bearer ${import.meta.env.SERVER_DB_JWT}`)
     }
+    // Both Supabase and local server have the same JWT secret for bike_user.
+    if (userIdData?.email) {
+        dbHeaders.append('Authorization',`Bearer ${import.meta.env.SERVER_DB_JWT}`);
+    } 
+    // else  if (bikeApi.includes('supabase')) {  // If not logged on still need Auth???
+    //     dbHeaders.append('Authorization','Bearer ' + import.meta.env.PUBLIC_ANON_KEY);
+    // }
     const dbResponse = await fetch(urlStr, {
         method: "POST",
         headers: dbHeaders,
