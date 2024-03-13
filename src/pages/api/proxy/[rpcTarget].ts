@@ -32,7 +32,7 @@ export async function POST(request) {
     if (bikeApi.includes('supabase')) {
         dbHeaders.append('Content-Profile','bikes_api');
         dbHeaders.append('apikey', import.meta.env.PUBLIC_ANON_KEY);
-        dbHeaders.append('Authorization','Bearer ' + import.meta.env.PUBLIC_ANON_KEY);
+        dbHeaders.append('Authorization','Bearer ' + import.meta.env.SERVER_DB_JWT);
     } else    
     if (userIdData?.email) {
         dbHeaders.append('Authorization',`Bearer ${import.meta.env.SERVER_DB_JWT}`)
