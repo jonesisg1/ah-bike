@@ -1,6 +1,6 @@
--- DROP FUNCTION public.format_comp_details(text);
+-- DROP FUNCTION bikes.format_comp_details(text);
 
-CREATE OR REPLACE FUNCTION public.format_comp_details(_details text)
+CREATE OR REPLACE FUNCTION bikes.format_comp_details(_details text)
  RETURNS text
  LANGUAGE plpgsql
 AS $function$
@@ -9,7 +9,7 @@ declare
   vDetails text := replace(replace(replace(_details, 'ML', 'MZ'), 'XXS', 'XYZ' ), 'XS', 'XZ');
   vLeft text;
   remain text;
-  sizes text:= 'XYZ,XZ,S,M,MZ,L,XL,XXL';
+  sizes text:= 'R1,R2,R3,XYZ,XZ,S,M,MZ,L,XL,XXL';
   subSizes text:= 'S,M,L,XL';
   i integer;
   pos integer;
@@ -28,9 +28,6 @@ begin
 		end if;
 	end if;
   end loop;
-  if remain is null then 
- 	remain := substring(_details,'[0-9, ]+') || ' - ' || ltrim(_details, substring(_details,'[0-9, ]+')); 
-  end if;
   return remain;
 end
 $function$

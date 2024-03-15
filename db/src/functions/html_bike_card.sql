@@ -13,6 +13,7 @@ select format(/*html*/'
 			<h4 class="pb-3">%2$s %1$s <small>(%10$s)</small></h4></a>
 			%12$s<br>
 			<div class="bike-card-badge-wrapper flex justify-center items-center">
+				<div id="bike-edit-area-%9$s"></div>
 				<sl-badge id="price-badge" variant="neutral" pill><sl-format-number type="currency" currency="GBP" value="%7$s" lang="en-GB"></sl-format-number></sl-badge>
 				%13$s
 			</div>
@@ -35,10 +36,11 @@ select format(/*html*/'
 	  coalesce($1.fork_travel || coalesce('/'|| nullif($1.rear_travel,'0'),'') || 'mm travel ', ''),
 	  $1.frame_material, $1.category, $1.bike_type),
   case when current_setting('request.jwt.claims', true)::json->>'role' = 'bike_user' 
-  	then '<sl-button variant="primary" size="small" outline>
-			  <sl-icon slot="prefix" name="gear"></sl-icon>
-			  Settings
-			</sl-button>'
+  	then 
+   '<sl-button class="stock-btn" variant="primary" size="small" outline data-bike-id='||$1.bike_id||'>
+    	<sl-icon slot="prefix" name="bar-chart-line" style="font-size: 1rem;"></sl-icon>
+    	Stock
+  	</sl-button>'
   	else ''
   end
   );

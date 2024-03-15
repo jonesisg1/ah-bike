@@ -29,7 +29,15 @@ AS $function$
 			    when $1.model_family != coalesce($1.prev_model_family,'#N') then '<sl-tree-item>'||$1.model_family
 				else ''
 		      end) --as model_family
-	 ,format('<sl-tree-item><a href="/bike?id=%s">%s</a></sl-tree-item>',$1.bike_id,$1.model_yr) --as model_name
+	 ,format('<sl-tree-item><a href="/bike?id=%s">%s</a>%s</sl-tree-item>',$1.bike_id,$1.model_yr,
+  case when current_setting('request.jwt.claims', true)::json->>'role' = 'bike_user' 
+  	then 
+   '<sl-button class="stock-btn" variant="primary" size="small" outline data-bike-id='||$1.bike_id||' style="padding-left:0.5rem;">
+    	<sl-icon slot="prefix" name="bar-chart-line" style="font-size: 1rem;"></sl-icon>
+    	Stock
+  	</sl-button>'
+  	else ''
+  end) --as model_name
 	 ,format('%s',case when $1.row_num = $1.last_row then '</sl-tree-item></sl-tree-item>' else '' end));
 $function$
 ;
