@@ -51,6 +51,7 @@ document.body.addEventListener(
                 stockBtn.addEventListener('click', (el) => {
                     // console.log(el.target.dataset.bikeId);
                     dialog.dataset.bikeId = (el.target as HTMXEventTarget).dataset.bikeId;
+                    document.querySelector('body').dispatchEvent(new Event('stock-btn-clicked'));
                     dialog.show()
                 });
             }
