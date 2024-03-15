@@ -38,7 +38,7 @@ const dialog = document.querySelector('.dialog-deny-close') as SLElement;
 document.body.addEventListener(
     "htmx:afterSwap",
     function (evt: HTMXEvent) {
-        console.log(`htmx:afterSwap - elt.id = ${evt.detail.elt.id} - view ${(document.getElementById("rg-grid-tree") as HTMLInputElement ).value}`)
+        // console.log(`htmx:afterSwap - elt.id = ${evt.detail.elt.id} - view ${(document.getElementById("rg-grid-tree") as HTMLInputElement ).value}`)
         if (evt.detail.elt.id === 'bike-cards') {
             const EoF = document.getElementById("EoF")
             if ( EoF ) {
@@ -73,7 +73,7 @@ document.body.addEventListener(
     "htmx:configRequest",
     function (evt: HTMXEvent) {
         
-        console.log(evt.detail.elt.id);
+        // console.log(evt.detail.elt.id);
 
         if (evt.detail.elt.id === 'sign-in-status') {
             evt.detail.parameters["callback"] = `${window.location.protocol}//${window.location.host}`;
@@ -201,8 +201,6 @@ document.querySelector('#rg-bike-type').addEventListener("sl-change", ()=>{
 openButton.addEventListener("click", () => drawer.show());
 
 async function mqAction(mediaQuery) {
-    // const mainHeader = document.querySelector('.main-header');
-    const search = document.querySelector('#search');
     if (mediaQuery.matches) {
         // If media query matches (bar hidden)
         drawer.append(filterBar);
@@ -211,7 +209,7 @@ async function mqAction(mediaQuery) {
             el.classList.add('justify-between');
             el.classList.remove('justify-center', 'gap-3');
         }
-        document.querySelector('#app-title').classList.add('text-xl');
+        document.querySelector('#app-title').classList.add('text-2xl');
     } else {
         document.querySelector("main").prepend(filterBar);
         filterBar.classList.add('side-bar-hidden', 'h-dvh');
@@ -220,7 +218,7 @@ async function mqAction(mediaQuery) {
             el.classList.remove('justify-between');
             el.classList.add('justify-center', 'gap-3');
         }
-        document.querySelector('#app-title').classList.remove('text-xl');
+        document.querySelector('#app-title').classList.remove('text-2xl');
 
         try {
             //  @ts-ignore
@@ -262,9 +260,10 @@ mqSmall.addEventListener("change", function () {
         </div>
         
         <div class="search-bar page-header mx-3 flex justify-center gap-3">
-            <sl-input placeholder="Model Search" id="search" type="search" size="small" class="self-center"clearable
+            <sl-input placeholder="Model Search" id="search" type="search" size="small" class="self-center" clearable
                 hx-post="/api/proxy/html_bike_cards" 
-                hx-trigger="sl-clear, input changed delay:500ms, search" 
+                hx-trigger="sl-clear, input changed delay:500ms, search"
+                hx-indicator="#indicator"
                 hx-target="#bike-cards" 
             >
                 <sl-icon name="search" slot="prefix"></sl-icon>
@@ -274,6 +273,7 @@ mqSmall.addEventListener("change", function () {
                 hx-post="/api/proxy/html_bike_cards" 
                 hx-target="#bike-cards"
                 hx-trigger="sl-change"
+                hx-indicator="#indicator"
             >
                 <sl-radio-button id="rb-grid" value="Grid" >
                     <sl-icon slot="prefix" name="grid-3x3-gap" style="font-size: 1.25rem;"></sl-icon>
@@ -291,19 +291,12 @@ mqSmall.addEventListener("change", function () {
                 data-bike-api={bikeApi}
                 data-anon-key={anonKey}
             >
-                <!-- <div id="test"
-                    hx-post="/api/proxy/test_proc"
-                    hx-target="this"
-                    hx-trigger="load">
-
-                </div> -->
                 <sl-drawer
                     label="Filters"
                     placement="start"
                     class="drawer-placement-start"
                     style="--size: 90%;"   
                 >
-                    <!-- <sl-button slot="footer" variant="primary">Close</sl-button> -->
                 </sl-drawer>
                 <div id="filter-bar" class="min-w-min side-bar">
                     <sl-select class="my-3"
@@ -312,6 +305,7 @@ mqSmall.addEventListener("change", function () {
                         hx-post="/api/proxy/html_bike_cards"
                         hx-target="#bike-cards"
                         hx-trigger="sl-change"
+                        hx-indicator="#indicator"
                     >
                         <sl-icon src={arrowsImage.src} slot="prefix" style="font-size: 1.25rem;"></sl-icon>
                         <sl-option value="book_price_from-ASC">
@@ -339,13 +333,16 @@ mqSmall.addEventListener("change", function () {
                     <div id="bike-filters"
                         hx-post="/rpc/html_bike_filters"
                         hx-target="this"
-                        hx-trigger="load, bike-type-changed from:body"                    
+                        hx-trigger="load, bike-type-changed from:body"
+                        hx-indicator="#indicator"                 
                     >
                     </div>
                 </div>
                 <!--This is here so that the 'more' button is under the grid!-->
                 <div id="bike-cards-wrapper">
-                    <sl-spinner id="indicator" class="htmx-indicator" style="font-size: 4rem; --track-width: 4px;"></sl-spinner>
+                    <!-- <sl-spinner id="indicator" class="htmx-indicator" style="font-size: 4rem; --track-width: 4px;"></sl-spinner> -->
+                    <div id="indicator" class="htmx-indicator lds-ring"><div></div><div></div><div></div><div></div></div>
+
                     <div id="bike-cards" class="flex flex-wrap"
                         hx-post="/api/proxy/html_bike_cards"
                         hx-target="this"
@@ -358,6 +355,7 @@ mqSmall.addEventListener("change", function () {
                             hx-post="/api/proxy/html_bike_cards"
                             hx-target="#bike-cards"
                             hx-trigger="click"
+                            hx-indicator="#indicator"
                         >
                             <sl-icon slot="prefix" name="download" style="font-size: 1.2rem;"></sl-icon>
                             <sl-icon slot="suffix" name="download" style="font-size: 1.2rem;"></sl-icon>			  
@@ -373,13 +371,47 @@ mqSmall.addEventListener("change", function () {
                 hx-get="api/htmlSignInStatus"
                 hx-target="this"
                 hx-trigger="load"
+                hx-indicator="#indicator"
             ></span>
         </div>
     </div>
 </Layout>
 
 <style is:global>
-
+    /* Lighweight CSS spinner from https://loading.io/css/ */
+    .lds-ring {
+        display: inline-block;
+        position: absolute;
+        top: calc(50% - 40px);
+        left: calc(50% - 40px);
+        width: 80px;
+        height: 80px;
+        border-color: #0284c7;
+    }
+    .lds-ring div {
+        box-sizing: border-box;
+        display: block;
+        position: absolute;
+        width: 64px;
+        height: 64px;
+        margin: 8px;
+        border: 8px solid #fff;
+        border-radius: 50%;
+        animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        border-color: #0284c7 transparent transparent transparent;;
+    }
+    .lds-ring div:nth-child(1) { animation-delay: -0.45s; }
+    .lds-ring div:nth-child(2) { animation-delay: -0.3s; }
+    .lds-ring div:nth-child(3) { animation-delay: -0.15s; }
+    @keyframes lds-ring {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    /* The rest of my styling */
     .removed {
         display: none;
     }
@@ -404,7 +436,7 @@ mqSmall.addEventListener("change", function () {
     }
     .page-container {  display: grid;
         grid-template-columns: 1fr;
-        grid-template-rows: 4rem 4rem 1fr 3rem;
+        grid-template-rows: 4rem 3rem 1fr 3rem;
         gap: 0px 0px;
         grid-auto-flow: row;
         grid-template-areas:
@@ -415,7 +447,7 @@ mqSmall.addEventListener("change", function () {
         height: 100dvh; overflow: auto;
     }
     .main-header { grid-area: main-header; }
-    .main-content { grid-area: main-content; height: calc(100dvh - 11rem); overflow: auto; }
+    .main-content { grid-area: main-content; height: calc(100dvh - 10rem); overflow: auto; }
                                                           /* 4 + 4 + 2*/
 
     :not(:defined) {
@@ -427,7 +459,7 @@ mqSmall.addEventListener("change", function () {
         overflow: auto;
         padding: 0 0.75rem 0.75rem 0.75rem; 
     }
-    .side-bar-hidden { height: calc(100dvh - 11rem); overflow: auto; }
+    .side-bar-hidden { height: calc(100dvh - 10rem); overflow: auto; }
 
     sl-checkbox:not(:last-child) {
         margin-right: 0.75rem; /* mr-3  */
