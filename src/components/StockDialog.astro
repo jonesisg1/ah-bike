@@ -1,0 +1,116 @@
+<sl-dialog label="Stock" class="dialog-deny-close dialog-width" style="--width: min-content;" data-bike-id="1">
+    <form id="bike-stock-form" class="input-validation-type" hx-headers='{"Accept": "text/html"}'>
+        <table class="table-auto">
+            <thead>
+                <th>Size</th>
+                <th>Qty</th>
+                <th>Offer price</th>
+            </thead>
+            <tbody
+                id="stock-table-input"
+                hx-post="/rpc/html_tr_bike_stock_input"
+                hx-target="this"
+                hx-trigger="sl-show from:sl-dialog"
+            >     
+            </tbody>
+        </table>        
+    </form>
+    <sl-button class="submit-btn" slot="footer" type="submit" form="bike-stock-form" variant="primary" outline>Update</sl-button>
+    <sl-button class="reset-btn" slot="footer" type="reset" form="bike-stock-form" variant="primary" outline>Reset</sl-button>
+    <sl-button class="close-btn" slot="footer" variant="primary" outline>Close</sl-button>
+  </sl-dialog>
+  
+  <!-- Below for testing -->
+  <!-- <sl-button id="stock-btn" variant="primary" size="small" outline data-bike-id-1>
+    <sl-icon slot="prefix" name="bar-chart-line"></sl-icon>
+    Stock
+  </sl-button> -->
+ 
+  <script type="module">
+       
+    // const openButton = document.querySelector('#stock-btn');
+    // openButton.addEventListener('click', () => dialog.show());
+    
+    const dialog = document.querySelector('.dialog-deny-close');
+    const closeButton = dialog.querySelector('.close-btn[slot="footer"]');
+    closeButton.addEventListener('click', () => dialog.hide());
+
+    // Prevent the dialog from closing when the user clicks on the overlay
+    dialog.addEventListener('sl-request-close', event => {
+        if (event.detail.source === 'overlay') {
+        event.preventDefault();
+        }
+    });
+
+
+    const form = document.querySelector('.input-validation-type');
+    // Wait for controls to be defined before attaching form listeners
+    await Promise.all([
+      customElements.whenDefined('sl-button'),
+      customElements.whenDefined('sl-input')
+    ]).then(() => {
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        const data = new FormData(form);
+        let dbRows = {};
+        let dbReq = [];
+        for (const [key, value] of data.entries()) {
+            if (value !== '') {
+                const [fs, seq, col] = key.split('-');
+                let rowCols = (dbRows[fs] ?? {});
+                rowCols.frame_size = fs;
+                rowCols.bike_stock_seq = seq;
+                rowCols[col] = value;
+                dbRows[fs] = rowCols;
+            }
+        }
+        for (const row in dbRows) {
+            dbReq.push( dbRows[row] );
+        }
+        console.log(dbReq);
+
+        alert('All fields are valid!');
+        
+      });
+    });
+  </script>
+
+  <style is:global>
+
+    .qty { width: 4rem; }
+    .price { width: 7.5rem; }
+    .size { text-align: center; }
+    sl-input::part(input) { padding-right: 2px; }
+    
+    table {
+        border-collapse: separate;
+        border-spacing: 0px;
+    }
+    th:first-of-type {
+        border-top-left-radius: var(--sl-border-radius-medium);
+    }
+    th:last-of-type {
+        border-top-right-radius: var(--sl-border-radius-medium);
+    }
+    td, tr {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+    th {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        text-align: left;
+        background-color: var(--sl-color-primary-600);
+        color: white;
+        /* text-2xl	 */
+        zzfont-size: 1.5rem; /* text-2xl 24px */
+        font-size: 1.125rem; /* text-lg	18px */
+        line-height: 2rem; /* 32px */
+        font-weight: 600;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        border: 1px solid #ddd;
+     }
+     tr:nth-child(even){background-color:var(--sl-color-gray-100);}
+  </style>
+  

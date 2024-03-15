@@ -1,5 +1,6 @@
 ---
 import DualRangeSlider from "../components/DualRangeSlider.astro";
+import StockDialog from "../components/StockDialog.astro"
 import Layout from "../layouts/Layout.astro"
 import mountainImage from "../assets/mountain.svg"
 import roadImage from "../assets/road.svg"
@@ -15,7 +16,8 @@ interface HTMXEvent extends Event {
   detail: any;
 }
 interface HTMXEventTarget extends EventTarget {
-  value: any;
+    dataset: any;
+    value: any;
 }
 interface Options {
     order?: string;
@@ -27,6 +29,12 @@ interface Options {
     gridTree?: string;
     search?: string;
 }
+interface SLElement extends Element {
+    dataset?: any;
+    show(): any;
+}
+const dialog = document.querySelector('.dialog-deny-close') as SLElement;
+
 document.body.addEventListener(
     "htmx:afterSwap",
     function (evt: HTMXEvent) {
@@ -38,6 +46,14 @@ document.body.addEventListener(
             } else {
                 document.getElementById("next-button").classList.remove('hidden');
             }
+            // For signed in users assign the stock buttons their dialog trigger.            
+            for (const stockBtn of document.querySelectorAll('.stock-btn')){
+                stockBtn.addEventListener('click', (el) => {
+                    // console.log(el.target.dataset.bikeId);
+                    dialog.dataset.bikeId = (el.target as HTMXEventTarget).dataset.bikeId;
+                    dialog.show()
+                });
+            }
         }
         if ((document.getElementById("rg-grid-tree") as HTMLInputElement ).value === 'Tree') {
             document.getElementById("next-button").classList.add('hidden');
@@ -47,10 +63,10 @@ document.body.addEventListener(
 document.body.addEventListener(
     "htmx:responseError",
     function (evt: HTMXEvent) {
-        console.log(`htmx:responseError - elt.id = ${evt.detail.elt.id}`)
-        if (evt.detail.elt.id === 'sign-in-status') {
+        console.error(`htmx:responseError - elt.id = ${evt.detail.elt.id}`)
+        // if (evt.detail.elt.id === 'sign-in-status') {
             window.location.assign('/signOut');
-        }
+        // }
     });
 
 document.body.addEventListener(
@@ -134,9 +150,10 @@ document.body.addEventListener(
                 window.history.pushState({ path: refresh }, '', refresh);
             }
             // console.log(`trigger: ${triggerType}, results: ${results}`)
-
-            if (evt.detail.elt.id === 'test') {
-                evt.detail.parameters["_arg"] = 'test from js';
+            console.log(`${evt.detail.elt.id} - bikeId: ${dialog.dataset.bikeId}`)
+            if (evt.detail.elt.id === 'stock-table-input') {
+                
+                evt.detail.parameters["_bike_id"] = dialog.dataset.bikeId;
             } else {
                 evt.detail.parameters["_options"] = options;
             }
@@ -222,6 +239,7 @@ mqSmall.addEventListener("change", function () {
 
 </script>
 <Layout title="Astro HTMX Bike">
+    <StockDialog></StockDialog>
     <div class="page-container" hx-headers='{"Accept": "text/html"}'>
         
         <div class="main-header page-header container flex mx-auto">
