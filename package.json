@@ -19,6 +19,7 @@
     "astro-htmx": "^1.0.5",
     "aws-jwt-verify": "^4.0.1",
     "htmx.org": "^1.9.10",
+    "jose": "^5.2.3",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3"
   }
