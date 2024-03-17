@@ -1,5 +1,7 @@
 -- DROP FUNCTION bikes_api.html_bike_filters(text);
 
+-- DROP FUNCTION bikes_api.html_bike_filters(text);
+
 CREATE OR REPLACE FUNCTION bikes_api.html_bike_filters(_options text DEFAULT '{}'::text)
  RETURNS bikes_api."text/html"
  LANGUAGE sql
@@ -102,7 +104,24 @@ union
 		  from bikes.bike 
 		  where bike_type = coalesce((_options::json->>'bikeType'), 'Mountain')
 		  order by 1) as b
+union
+	select format(
+		'<sl-details summary="%1$s" class="mt-3" open>
+			%2$s		
+		</sl-details>',
+		'Sizes In Stock',
+		string_agg(bikes.html_filter_checkbox('sizes_in_stock', b.fs::text,
+			_options::jsonb#>'{filters,sizes_in_stock}' @> format('"%1$s"',b.fs::text)::jsonb 
+			), '')
+		) as html
+	 from (select distinct bsv.frame_size as fs, fs.size_order
+		  from bikes.bike_stock_view bsv 
+		  join bikes.bike b on b.bike_id = bsv.bike_id
+		  join bikes.frame_size as fs on fs.frame_size = bsv.frame_size
+		  where bike_type = coalesce((_options::json->>'bikeType'), 'Mountain')
+		  order by fs.size_order) as b
 order by 1
 ) as main;
 $function$
+;
 ;

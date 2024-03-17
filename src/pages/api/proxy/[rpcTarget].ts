@@ -3,6 +3,8 @@ export const prerender = false;
 import { decodeIdToken } from "../../../modules/cognito";
 import type { tokenProps } from "../../../modules/cognito";
 
+import * as jose from 'jose' 
+
 export async function POST(request) {
     let userIdData: tokenProps;
 
@@ -35,11 +37,22 @@ export async function POST(request) {
     }
     // Both Supabase and local server have the same JWT secret for bike_user.
     if (userIdData?.email) {
-        dbHeaders.append('Authorization',`Bearer ${import.meta.env.SERVER_DB_JWT}`);
+
+        const secret = new TextEncoder().encode(import.meta.env.SERVER_DB_SECRET,)
+        const alg = 'HS256'
+        const jwt = await new jose.SignJWT({
+            'role': 'bike_user',
+            'email' : userIdData.email
+        })
+        .setProtectedHeader({ alg })
+        .setIssuedAt()
+        .setExpirationTime('1h')
+        .sign(secret)
+          
+        // console.log(jwt)
+        dbHeaders.append('Authorization',`Bearer ${jwt}`);
     } 
-    // else  if (bikeApi.includes('supabase')) {  // If not logged on still need Auth???
-    //     dbHeaders.append('Authorization','Bearer ' + import.meta.env.PUBLIC_ANON_KEY);
-    // }
+    console.log(jsonBody);
     const dbResponse = await fetch(urlStr, {
         method: "POST",
         headers: dbHeaders,

@@ -16,7 +16,8 @@ AS SELECT b.bike_id,
     b.img_src,
     b.bike_type,
     ft.fork_travel,
-    w.wheel_sizes
+    w.wheel_sizes,
+    bs.sizes_in_stock
    FROM bikes.bike b
      LEFT JOIN ( SELECT wsq.bike_id,
             string_agg(wsq.wheel_size, ', '::text) AS wheel_sizes
@@ -33,4 +34,8 @@ AS SELECT b.bike_id,
                    FROM bikes.bike_fork_travel bft
                   GROUP BY bft.bike_id, bft.fork_travel
                   ORDER BY bft.bike_id, bft.fork_travel) ftq
-          GROUP BY ftq.bike_id) ft ON ft.bike_id = b.bike_id;
+          GROUP BY ftq.bike_id) ft ON ft.bike_id = b.bike_id
+     LEFT JOIN ( SELECT bike_stock_view.bike_id,
+            string_agg(bike_stock_view.frame_size, ','::text) AS sizes_in_stock
+           FROM bikes.bike_stock_view
+          GROUP BY bike_stock_view.bike_id) bs ON bs.bike_id = b.bike_id;

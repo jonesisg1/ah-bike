@@ -11,37 +11,36 @@
                 hx-post="/rpc/html_tr_bike_stock_input"
                 hx-target="this"
                 hx-trigger="stock-btn-clicked from:body"
-            >     
+            ><tr></tr>
             </tbody>
         </table>        
     </form>
-    <sl-button class="submit-btn" slot="footer" type="submit" form="bike-stock-form" variant="primary" outline>Update</sl-button>
+    <sl-button id="update-stock-btn" class="submit-btn" slot="footer" type="submit" form="bike-stock-form" variant="primary" outline
+        hx-post="api/proxy/update_stock"
+        hx-target="#stock-table-input"
+        hx-trigger="update-btn-clicked from:form"
+    >
+        Update
+    </sl-button>
     <sl-button class="reset-btn" slot="footer" type="reset" form="bike-stock-form" variant="primary" outline>Reset</sl-button>
     <sl-button class="close-btn" slot="footer" variant="primary" outline>Close</sl-button>
   </sl-dialog>
   
-  <!-- Below for testing -->
-  <!-- <sl-button id="stock-btn" variant="primary" size="small" outline data-bike-id-1>
-    <sl-icon slot="prefix" name="bar-chart-line"></sl-icon>
-    Stock
-  </sl-button> -->
- 
-  <script type="module">
-       
-    // const openButton = document.querySelector('#stock-btn');
-    // openButton.addEventListener('click', () => dialog.show());
-    
+  <script>
+    import { setGlobal } from "../modules/globals.ts"
+    import { notifyAsToast } from "../modules/toastHelper";
+    import type { HTMXEvent, SLElement } from "../modules/types.ts"
+        
     const dialog = document.querySelector('.dialog-deny-close');
     const closeButton = dialog.querySelector('.close-btn[slot="footer"]');
-    closeButton.addEventListener('click', () => dialog.hide());
+    closeButton.addEventListener('click', () => (dialog as SLElement).hide());
 
     // Prevent the dialog from closing when the user clicks on the overlay
     dialog.addEventListener('sl-request-close', event => {
-        if (event.detail.source === 'overlay') {
+        if ((event as HTMXEvent).detail.source === 'overlay') {
         event.preventDefault();
         }
     });
-
 
     const form = document.querySelector('.input-validation-type');
     // Wait for controls to be defined before attaching form listeners
@@ -51,13 +50,18 @@
     ]).then(() => {
       form.addEventListener('submit', event => {
         event.preventDefault();
-        const data = new FormData(form);
+
+        const data = new FormData(document.querySelector('sl-dialog>form'));
         let dbRows = {};
         let dbReq = [];
         for (const [key, value] of data.entries()) {
-            if (value !== '') {
-                const [fs, seq, col] = key.split('-');
+            const [fs, seq, col] = key.split('-');
+            // Only insert changed values.
+            const searchClass = `.sz${fs}-${col}`.replace('/','').replace('_','');
+            console.log(searchClass)
+            if (value !== document.querySelector(searchClass).attributes.getNamedItem('value').value){
                 let rowCols = (dbRows[fs] ?? {});
+                rowCols.bike_id = parseInt((dialog as SLElement).dataset.bikeId);
                 rowCols.frame_size = fs;
                 rowCols.bike_stock_seq = seq;
                 rowCols[col] = value;
@@ -65,12 +69,22 @@
             }
         }
         for (const row in dbRows) {
+            // Handle price updated but stock not changed!
+            if ((dbRows[row].quantity ?? '#NULL#') === '#NULL#') {
+                const searchClass = `.sz${dbRows[row].frame_size}-quantity`.replace('/','');
+                // console.log(searchClass)
+                dbRows[row].quantity = document.querySelector(searchClass).attributes.getNamedItem('value').value;
+            }
             dbReq.push( dbRows[row] );
         }
-        console.log(dbReq);
-
-        alert('All fields are valid!');
-        
+        // console.log(dbReq)
+        if (dbReq.length > 0) {
+            // Save the request data.
+            setGlobal('stockUpdateData', dbReq);
+            form.dispatchEvent(new Event('update-btn-clicked'));
+        } else {
+            notifyAsToast('Information', 'There are no stock changes to update.')
+        }
       });
     });
   </script>

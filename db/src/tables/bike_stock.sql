@@ -12,5 +12,7 @@ CREATE TABLE bikes.bike_stock (
 	wheel_size text NULL,
 	bike_shop_id int4 NULL,
 	quantity int4 NOT NULL,
-	offer_price int4 NULL
+	offer_price int4 NULL,
+	user_email text NOT NULL,
+	update_ts timestamp NOT NULL
 );

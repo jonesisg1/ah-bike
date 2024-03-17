@@ -31,10 +31,10 @@ select format(/*html*/'
   $1.book_price_from/100, $1.img_src, 
   $1.bike_id, $1.model_year,
   lower($1.brand),
-  format('%1$s%2$s%3$s %4$s %5$s Bike.',
+  format('%1$s%2$s%3$s %4$s %5$s Bike.%6$s',
       coalesce($1.wheel_sizes ||' wheel ', ''),
 	  coalesce($1.fork_travel || coalesce('/'|| nullif($1.rear_travel,'0'),'') || 'mm travel ', ''),
-	  $1.frame_material, $1.category, $1.bike_type),
+	  $1.frame_material, $1.category, $1.bike_type, '<br/><strong>Sizes in stock: </strong>'||$1.sizes_in_stock),
   case when current_setting('request.jwt.claims', true)::json->>'role' = 'bike_user' 
   	then 
    '<sl-button class="stock-btn" variant="primary" size="small" outline data-bike-id='||$1.bike_id||'>

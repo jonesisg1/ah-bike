@@ -11,14 +11,10 @@ const bikeApi = import.meta.env.PUBLIC_BIKE_API;
 const anonKey = import.meta.env.PUBLIC_ANON_KEY;
 ---
 <script>
+import { getGlobal } from "../modules/globals.ts"
+import type { HTMXEvent, HTMXEventTarget, SLElement } from "../modules/types.ts"
+import { notifyAsToast } from "../modules/toastHelper.ts"
 
-interface HTMXEvent extends Event {
-  detail: any;
-}
-interface HTMXEventTarget extends EventTarget {
-    dataset: any;
-    value: any;
-}
 interface Options {
     order?: string;
     priceFrom?: string;
@@ -28,10 +24,6 @@ interface Options {
     bikeType?: string;
     gridTree?: string;
     search?: string;
-}
-interface SLElement extends Element {
-    dataset?: any;
-    show(): any;
 }
 const dialog = document.querySelector('.dialog-deny-close') as SLElement;
 
@@ -51,11 +43,16 @@ document.body.addEventListener(
                 stockBtn.addEventListener('click', (el) => {
                     // console.log(el.target.dataset.bikeId);
                     dialog.dataset.bikeId = (el.target as HTMXEventTarget).dataset.bikeId;
-                    document.querySelector('body').dispatchEvent(new Event('stock-btn-clicked'));                    
+                    document.querySelector('body').dispatchEvent(new Event('stock-btn-clicked'));
                 });
             }
         } else if (evt.detail.elt.id === 'stock-table-input') {
-            dialog.show()
+            if (document.querySelector('.stock-updated')) {
+                notifyAsToast('Database updated', 'You can safely close the Stock dialog.', 'success')
+                document.querySelector('body').dispatchEvent(new Event('stock-changed'));
+            } else {
+                dialog.show();
+            }
         }
         if ((document.getElementById("rg-grid-tree") as HTMLInputElement ).value === 'Tree') {
             document.getElementById("next-button").classList.add('hidden');
@@ -75,7 +72,7 @@ document.body.addEventListener(
     "htmx:configRequest",
     function (evt: HTMXEvent) {
         
-        // console.log(evt.detail.elt.id);
+        console.log(evt.detail.elt.id);
 
         if (evt.detail.elt.id === 'sign-in-status') {
             evt.detail.parameters["callback"] = `${window.location.protocol}//${window.location.host}`;
@@ -154,8 +151,10 @@ document.body.addEventListener(
             // console.log(`trigger: ${triggerType}, results: ${results}`)
             console.log(`${evt.detail.elt.id} - bikeId: ${dialog.dataset.bikeId}`)
             if (evt.detail.elt.id === 'stock-table-input') {
-                
                 evt.detail.parameters["_bike_id"] = dialog.dataset.bikeId;
+            } else if (evt.detail.elt.id === 'update-stock-btn') {
+                const stockUpdateData = getGlobal('stockUpdateData');
+                evt.detail.parameters["_options"] = { updates: stockUpdateData };
             } else {
                 evt.detail.parameters["_options"] = options;
             }
@@ -335,7 +334,7 @@ mqSmall.addEventListener("change", function () {
                     <div id="bike-filters"
                         hx-post="/rpc/html_bike_filters"
                         hx-target="this"
-                        hx-trigger="load, bike-type-changed from:body"
+                        hx-trigger="load, bike-type-changed from:body, stock-changed from:body"
                         hx-indicator="#indicator"                 
                     >
                     </div>
