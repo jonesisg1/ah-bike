@@ -347,7 +347,7 @@ mqSmall.addEventListener("change", function () {
                     <div id="bike-cards" class="flex flex-wrap"
                         hx-post="/api/proxy/html_bike_cards"
                         hx-target="this"
-                        hx-trigger="load, post-filter-reset from:body"
+                        hx-trigger="load, post-filter-reset from:body, stock-changed from:body"
                         hx-indicator="#indicator"
                     >
                     </div>                    
