@@ -12,18 +12,29 @@ select format(/*html*/'
 			<img loading="lazy" src="%11$s/%8$s" alt="Image of %1$s" />
 			<h4 class="pb-3">%2$s %1$s <small>(%10$s)</small></h4></a>
 			%12$s<br>
-			<div class="bike-card-badge-wrapper flex justify-center items-center">
-				<div id="bike-edit-area-%9$s"></div>
-				<sl-badge id="price-badge" variant="neutral" pill><sl-format-number type="currency" currency="GBP" value="%7$s" lang="en-GB"></sl-format-number></sl-badge>
-				%13$s
+			<div class="bike-card-badge-wrapper flex justify-center">
+				%14$s
+				<sl-badge id="price-badge"  pill><sl-format-number class="%15$s" type="currency" currency="GBP" value="%7$s" lang="en-GB"></sl-format-number></sl-badge>
 			</div>
+			%13$s
 		</sl-card>
 	</div>
 	<style>
     .bike-card-badge-wrapper>sl-badge::part(base) {
-        margin: 0.25rem;
+        margin: 0.5rem;
         font-size: inherit;
     }
+    sl-card::part(body) {
+        padding-bottom: 0.5rem;        
+    }
+    sl-card::part(footer) {
+        padding-top: 1rem;
+		padding-bottom: 1rem;        
+    }
+	.line-through {
+		text-decoration-line: line-through;
+	}
+	sl-badge.sale-badge::part(base) { background-color: var(--sl-color-red-700); }
 	</style>',
   $1.model_name, $1.brand,
   $1.wheel_sizes, $1.frame_material,
@@ -37,12 +48,16 @@ select format(/*html*/'
 	  $1.frame_material, $1.category, $1.bike_type, '<br/><strong>Sizes in stock: </strong>'||$1.sizes_in_stock),
   case when current_setting('request.jwt.claims', true)::json->>'role' = 'bike_user' 
   	then 
-   '<sl-button class="stock-btn" variant="primary" size="small" outline data-bike-id='||$1.bike_id||'>
+   '<div slot="footer" class ="flex justify-center"><sl-button class="stock-btn" variant="primary" size="small" outline data-bike-id='||$1.bike_id||'>
     	<sl-icon slot="prefix" name="bar-chart-line" style="font-size: 1rem;"></sl-icon>
     	Stock
-  	</sl-button>'
+  	</sl-button></div>'
   	else ''
-  end
+  end,
+  '<sl-badge class="sale-badge" pill><sl-format-number type="currency" currency="GBP" value="'||
+  (select min(offer_price) from bikes.bike_stock_view bsv where bsv.bike_id = $1.bike_id)||
+  '" lang="en-GB"></sl-format-number></sl-badge>',
+  case when (select min(offer_price) from bikes.bike_stock_view bsv where bsv.bike_id = $1.bike_id) is not null then 'line-through' else '' end
   );
 $function$
 ;

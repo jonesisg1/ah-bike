@@ -3,10 +3,15 @@
 CREATE OR REPLACE VIEW bikes.bike_stock_view
 AS SELECT bike_id,
     frame_size,
-    quantity
+    quantity,
+    offer_price
    FROM ( SELECT bs_1.bike_id,
             bs_1.frame_size,
-            bs_1.quantity
+            bs_1.quantity,
+                CASE
+                    WHEN COALESCE(bs_1.offer_price, 0) > 0 THEN bs_1.offer_price / 100
+                    ELSE NULL::integer
+                END AS offer_price
            FROM bikes.bike_stock bs_1
              JOIN bikes.frame_size fs ON fs.frame_size = bs_1.frame_size
           WHERE bs_1.bike_stock_seq = (( SELECT max(cur.bike_stock_seq) AS max
