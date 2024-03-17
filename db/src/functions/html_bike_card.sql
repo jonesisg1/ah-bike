@@ -53,9 +53,9 @@ select format(/*html*/'
   	else ''
   end,
   '<sl-badge class="sale-badge" pill><sl-format-number type="currency" currency="GBP" value="'||
-  (select min(offer_price) from bikes.bike_stock_view bsv where bsv.bike_id = $1.bike_id)||
+  (select min(offer_price/100) from bikes.bike_stock_view bsv where bsv.bike_id = $1.bike_id)||
   '" lang="en-GB"></sl-format-number></sl-badge>',
-  case when (select min(offer_price) from bikes.bike_stock_view bsv where bsv.bike_id = $1.bike_id) is not null then 'line-through' else '' end
+  case when (select min(offer_price/100) from bikes.bike_stock_view bsv where bsv.bike_id = $1.bike_id) is not null then 'line-through' else '' end
   );
 $function$
 ;

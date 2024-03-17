@@ -17,7 +17,8 @@ AS SELECT b.bike_id,
     b.bike_type,
     ft.fork_travel,
     w.wheel_sizes,
-    bs.sizes_in_stock
+    bs.sizes_in_stock,
+    LEAST(bp.min_price, COALESCE(bp.min_price, b.book_price_from)) AS best_price
    FROM bikes.bike b
      LEFT JOIN ( SELECT wsq.bike_id,
             string_agg(wsq.wheel_size, ', '::text) AS wheel_sizes
@@ -38,4 +39,8 @@ AS SELECT b.bike_id,
      LEFT JOIN ( SELECT bike_stock_view.bike_id,
             string_agg(bike_stock_view.frame_size, ','::text) AS sizes_in_stock
            FROM bikes.bike_stock_view
-          GROUP BY bike_stock_view.bike_id) bs ON bs.bike_id = b.bike_id;
+          GROUP BY bike_stock_view.bike_id) bs ON bs.bike_id = b.bike_id
+     LEFT JOIN ( SELECT bike_stock_view.bike_id,
+            min(bike_stock_view.offer_price) AS min_price
+           FROM bikes.bike_stock_view
+          GROUP BY bike_stock_view.bike_id) bp ON bp.bike_id = b.bike_id;

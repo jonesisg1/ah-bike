@@ -9,7 +9,7 @@ AS SELECT bike_id,
             bs_1.frame_size,
             bs_1.quantity,
                 CASE
-                    WHEN COALESCE(bs_1.offer_price, 0) > 0 THEN bs_1.offer_price / 100
+                    WHEN COALESCE(bs_1.offer_price, 0) > 0 THEN bs_1.offer_price
                     ELSE NULL::integer
                 END AS offer_price
            FROM bikes.bike_stock bs_1
