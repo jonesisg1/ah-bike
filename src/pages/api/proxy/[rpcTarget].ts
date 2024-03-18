@@ -14,7 +14,14 @@ export async function POST(request) {
         for (const cookie of cookies.split(';')) {
             if (cookie.split('=')[0] === 'access-token') {
                 const awsIdToken = cookie.split('=')[1];
-                userIdData = await decodeIdToken(import.meta.env, awsIdToken);
+                try{
+                    userIdData = await decodeIdToken(import.meta.env, awsIdToken);
+                } catch (e) {
+                    return new Response(null, { 
+                        status: 401,
+                        statusText: 'Invalid Token.'
+                    })
+                }
             }
         }
     }

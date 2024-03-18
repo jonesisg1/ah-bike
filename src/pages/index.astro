@@ -12,8 +12,9 @@ const anonKey = import.meta.env.PUBLIC_ANON_KEY;
 ---
 <script>
 import { getGlobal } from "../modules/globals.ts"
-import type { HTMXEvent, HTMXEventTarget, SLElement } from "../modules/types.ts"
+import type { HTMXEvent, HTMXEventTarget } from "../modules/types.ts"
 import { notifyAsToast } from "../modules/toastHelper.ts"
+import type { SlCheckbox, SlDialog } from "@shoelace-style/shoelace";
 
 interface Options {
     order?: string;
@@ -25,7 +26,7 @@ interface Options {
     gridTree?: string;
     search?: string;
 }
-const dialog = document.querySelector('.dialog-deny-close') as SLElement;
+const dialog = document.querySelector('.dialog-deny-close') as SlDialog;
 
 document.body.addEventListener(
     "htmx:afterSwap",
@@ -72,7 +73,7 @@ document.body.addEventListener(
     "htmx:configRequest",
     function (evt: HTMXEvent) {
         
-        console.log(evt.detail.elt.id);
+        // console.log(evt.detail.elt.id);
 
         if (evt.detail.elt.id === 'sign-in-status') {
             evt.detail.parameters["callback"] = `${window.location.protocol}//${window.location.host}`;
@@ -117,7 +118,7 @@ document.body.addEventListener(
                 } else
                 {
                     // Can't use .querySelectorAll("sl-checkbox[checked]")  // see issue #1855 (won't fix :(
-                    document.querySelectorAll("sl-checkbox").forEach((el:HTMLInputElement)=>{
+                    document.querySelectorAll("sl-checkbox").forEach((el:SlCheckbox)=>{
                         if (el.checked) {
                             filters[el.attributes['data-filter-type'].nodeValue] ??= [];
                             filters[el.attributes['data-filter-type'].nodeValue].push(el.value);

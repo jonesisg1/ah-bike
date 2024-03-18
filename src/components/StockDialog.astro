@@ -29,63 +29,84 @@
   <script>
     import { setGlobal } from "../modules/globals.ts"
     import { notifyAsToast } from "../modules/toastHelper";
-    import type { HTMXEvent, SLElement } from "../modules/types.ts"
+    import type { HTMXEvent } from "../modules/types.ts"
+    import type { SlDialog, SlInput } from "@shoelace-style/shoelace";
         
-    const dialog = document.querySelector('.dialog-deny-close');
+    const form: HTMLFormElement = document.querySelector('.input-validation-type');
+    const dialog: SlDialog = document.querySelector('.dialog-deny-close');
     const closeButton = dialog.querySelector('.close-btn[slot="footer"]');
-    closeButton.addEventListener('click', () => (dialog as SLElement).hide());
+    
+    closeButton.addEventListener('click', () => {
+        form.reset();  // sl-request-close not called. Bug???
+        dialog.hide();
+    });
 
     // Prevent the dialog from closing when the user clicks on the overlay
     dialog.addEventListener('sl-request-close', event => {
         if ((event as HTMXEvent).detail.source === 'overlay') {
-        event.preventDefault();
+            event.preventDefault();
+        } else {
+            // Need to rest form so that automatic validation is not broken if form closed in error state.
+            form.reset();
         }
     });
 
-    const form = document.querySelector('.input-validation-type');
-    // Wait for controls to be defined before attaching form listeners
-    await Promise.all([
-      customElements.whenDefined('sl-button'),
-      customElements.whenDefined('sl-input')
-    ]).then(() => {
-      form.addEventListener('submit', event => {
-        event.preventDefault();
-
+    let preUpdateStock;
+    function getStockState () {
         const data = new FormData(document.querySelector('sl-dialog>form'));
-        let dbRows = {};
-        let dbReq = [];
+        let stockRows = {};
         for (const [key, value] of data.entries()) {
-            const [fs, seq, col] = key.split('-');
-            // Only insert changed values.
-            const searchClass = `.sz${fs}-${col}`.replace('/','').replace('_','');
-            console.log(searchClass)
-            if (value !== document.querySelector(searchClass).attributes.getNamedItem('value').value){
-                let rowCols = (dbRows[fs] ?? {});
-                rowCols.bike_id = parseInt((dialog as SLElement).dataset.bikeId);
+            if (value !== '') {
+                const [fs, seq, col] = key.split('-');
+                let rowCols = (stockRows[fs] ?? {});
+                rowCols.bike_id = parseInt((dialog as SlDialog).dataset.bikeId);
                 rowCols.frame_size = fs;
                 rowCols.bike_stock_seq = seq;
                 rowCols[col] = value;
-                dbRows[fs] = rowCols;
+                stockRows[fs] = rowCols;
             }
         }
-        for (const row in dbRows) {
-            // Handle price updated but stock not changed!
-            if ((dbRows[row].quantity ?? '#NULL#') === '#NULL#') {
-                const searchClass = `.sz${dbRows[row].frame_size}-quantity`.replace('/','');
-                // console.log(searchClass)
-                dbRows[row].quantity = document.querySelector(searchClass).attributes.getNamedItem('value').value;
+        return stockRows;
+    }
+
+    function handleSubmit (event) {
+        event.preventDefault();
+        const newStock = getStockState();
+        if (JSON.stringify(preUpdateStock) === JSON.stringify(newStock)) {
+            notifyAsToast('Information', 'No stock changes to update.');
+        } else {
+            let dbReq = [];
+            for (const row in newStock) {
+                if(parseInt(newStock[row].quantity) === 0 && parseFloat(newStock[row].offer_price ?? 0) > 0 ){
+                    const searchClass = `.sz${newStock[row].frame_size}-offerprice`.replace('/','');
+                    (document.querySelector(searchClass) as SlInput).focus();
+                    return notifyAsToast('Invalid data', 'Cannot set Offer Price when no stock.', 'warning', 'exclamation-triangle');
+                } 
+                // Send all rows, the database will only insert new ones.
+                dbReq.push( newStock[row] );
             }
-            dbReq.push( dbRows[row] );
-        }
-        // console.log(dbReq)
-        if (dbReq.length > 0) {
             // Save the request data.
             setGlobal('stockUpdateData', dbReq);
             form.dispatchEvent(new Event('update-btn-clicked'));
-        } else {
-            notifyAsToast('Information', 'There are no stock changes to update.')
         }
-      });
+    }  
+    
+    dialog.addEventListener("htmx:afterSwap", async function (evt: HTMXEvent) {
+        // Store pre update
+        preUpdateStock = getStockState();
+
+        // We appear to have to reattach the event listner after a swap.
+        form.removeEventListener('submit', handleSubmit);
+
+        // Wait for controls to be defined before attaching form listeners
+        await Promise.all([
+            customElements.whenDefined('sl-dialog'),
+            customElements.whenDefined('sl-button'),
+            customElements.whenDefined('sl-input')
+        ]).then(() => {
+            // console.log('Dialog = whenDefined')
+            form.addEventListener('submit', handleSubmit);
+        });
     });
   </script>
 
@@ -95,6 +116,9 @@
     .price { width: 7.5rem; }
     .size { text-align: center; }
     sl-input::part(input) { padding-right: 2px; }
+    sl-input.price::part(input) { padding-left: 2px; }
+    sl-input::part(clear-button) { padding-right: .5rem; }
+
     
     table {
         border-collapse: separate;
