@@ -30,11 +30,13 @@
     import { setGlobal } from "../modules/globals.ts"
     import { notifyAsToast } from "../modules/toastHelper";
     import type { HTMXEvent } from "../modules/types.ts"
-    import type { SlDialog, SlInput } from "@shoelace-style/shoelace";
+    import type { SlButton, SlDialog, SlInput } from "@shoelace-style/shoelace";
         
     const form: HTMLFormElement = document.querySelector('.input-validation-type');
     const dialog: SlDialog = document.querySelector('.dialog-deny-close');
-    const closeButton = dialog.querySelector('.close-btn[slot="footer"]');
+    const closeButton: SlButton = dialog.querySelector('.close-btn[slot="footer"]');
+    const updateButton: SlButton = dialog.querySelector('#update-stock-btn');
+    const resetButton: SlButton = dialog.querySelector('.reset-btn[slot="footer"]');
     
     closeButton.addEventListener('click', () => {
         form.reset();  // sl-request-close not called. Bug???
@@ -42,8 +44,8 @@
     });
 
     // Prevent the dialog from closing when the user clicks on the overlay
-    dialog.addEventListener('sl-request-close', event => {
-        if ((event as HTMXEvent).detail.source === 'overlay') {
+    dialog.addEventListener('sl-request-close', (event: HTMXEvent) => {
+        if (event.detail.source === 'overlay') {
             event.preventDefault();
         } else {
             // Need to rest form so that automatic validation is not broken if form closed in error state.
@@ -53,7 +55,7 @@
 
     let preUpdateStock;
     function getStockState () {
-        const data = new FormData(document.querySelector('sl-dialog>form'));
+        const data = new FormData(form);
         let stockRows = {};
         for (const [key, value] of data.entries()) {
             if (value !== '') {
@@ -67,6 +69,17 @@
             }
         }
         return stockRows;
+    }
+
+    function setButtonState () {
+        const newStock = getStockState();
+        if (JSON.stringify(preUpdateStock) !== JSON.stringify(newStock)) {
+            updateButton.disabled = false;
+            resetButton.disabled = false;
+        } else  {
+            updateButton.disabled = true;
+            resetButton.disabled = true;
+        }
     }
 
     function handleSubmit (event) {
@@ -91,12 +104,15 @@
         }
     }  
     
+    // There is only one HTMX call in the dialog, the stock table, so this event is triggered on each load of stock data.
     dialog.addEventListener("htmx:afterSwap", async function (evt: HTMXEvent) {
         // Store pre update
         preUpdateStock = getStockState();
+        setButtonState();
 
         // We appear to have to reattach the event listner after a swap.
         form.removeEventListener('submit', handleSubmit);
+        form.removeEventListener('reset', setButtonState);
 
         // Wait for controls to be defined before attaching form listeners
         await Promise.all([
@@ -106,6 +122,13 @@
         ]).then(() => {
             // console.log('Dialog = whenDefined')
             form.addEventListener('submit', handleSubmit);
+            form.addEventListener('reset', setButtonState);
+
+            for (const input of document.querySelectorAll('#stock-table-input>tr>td>sl-input')){
+                input.addEventListener('sl-change', (event) => {
+                    setButtonState();
+                })
+            }
         });
     });
   </script>
